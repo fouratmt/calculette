@@ -13,9 +13,11 @@ Small static scaffold for a freelance workday planning app.
 
 ```text
 .
+├── .editorconfig
 ├── docs/
 │   ├── IMPLEMENTATION_TRACKER.md
 │   └── PLAN.md
+├── justfile
 ├── src/
 │   ├── app.js
 │   ├── core/
@@ -37,6 +39,8 @@ Small static scaffold for a freelance workday planning app.
 
 - `docs/PLAN.md` is the source product plan.
 - `docs/IMPLEMENTATION_TRACKER.md` records what is currently implemented against that plan.
+- The browser entry point is loaded with plain deferred scripts so `index.html` works when opened directly from disk.
+- Normal legal workdays are prefilled as worked days, and the calendar is used mainly to subtract or adjust days.
 - `src/core` holds business rules and summary calculations.
 - `src/data` holds persistence and holiday data sources.
 - `src/lib` holds generic date helpers.
@@ -45,8 +49,28 @@ Small static scaffold for a freelance workday planning app.
 
 ## Run
 
-Open `index.html` directly in a browser, or serve the directory with a static file server such as:
+The app still works when opening `index.html` directly, but the simplest local workflow is now:
 
 ```sh
-python3 -m http.server 4173
+just run
 ```
+
+That serves the app on `http://127.0.0.1:4173`.
+
+If you specifically want the `uvx` variant, it is also available:
+
+```sh
+just run-uvx
+```
+
+## Dev Helpers
+
+Keep tooling light for this kind of static app:
+
+```sh
+just check
+just doctor
+```
+
+- `just check` runs a fast JavaScript syntax pass with Node across `src/`.
+- `just doctor` shows the local versions of `just`, `uvx`, `python3`, and `node`.

@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculette Jour/Homme</title>
+    <title>Calculette jours-homme</title>
     <link rel="stylesheet" href="./src/styles/main.css" />
   </head>
   <body>
     <div class="page-shell">
       <header class="hero">
-        <p class="eyebrow">Freelance planning</p>
-        <h1>Calculette Jour/Homme</h1>
+        <p class="eyebrow">Pilotage freelance</p>
+        <h1>Calculette jours-homme</h1>
         <p class="hero-copy">
-          Track worked days, holidays, and closures across a year with a clear
-          pace summary.
+          Suivez vos jours travaillés, congés et fermetures sur l'année avec
+          une vue claire de votre trajectoire.
         </p>
       </header>
 
@@ -21,30 +21,27 @@
         <section class="panel controls-panel" aria-labelledby="controls-title">
           <div class="section-header">
             <div>
-              <p class="section-kicker">Setup</p>
-              <h2 id="controls-title">Year settings</h2>
+              <p class="section-kicker">Paramètres</p>
+              <h2 id="controls-title">Réglages annuels</h2>
             </div>
             <p class="section-copy">
-              French public holidays are generated locally for the selected
-              year.
+              Les jours fériés français sont générés localement pour l'année
+              sélectionnée.
             </p>
           </div>
 
           <form id="settings-form" class="settings-grid">
             <label class="field">
-              <span>Selected year</span>
-              <input
-                id="year-input"
-                name="year"
-                type="number"
-                min="2020"
-                max="2100"
-                step="1"
-              />
+              <span>Année</span>
+              <select id="year-input" name="year">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value="2027">2027</option>
+              </select>
             </label>
 
             <label class="field">
-              <span>Target days</span>
+              <span>Objectif annuel</span>
               <input
                 id="target-days-input"
                 name="targetDays"
@@ -60,33 +57,32 @@
         <section class="panel summary-panel" aria-labelledby="summary-title">
           <div class="section-header">
             <div>
-              <p class="section-kicker">Summary</p>
-              <h2 id="summary-title">Progress snapshot</h2>
+              <p class="section-kicker">Synthèse</p>
+              <h2 id="summary-title">État d'avancement</h2>
             </div>
             <p class="section-copy">
-              This first pass resolves weekends and French holidays out of the
-              box.
+              Les week-ends et jours fériés sont pris en compte automatiquement.
             </p>
           </div>
 
           <div class="summary-grid">
             <article class="metric-card">
-              <span class="metric-label">Target days</span>
+              <span class="metric-label">Objectif</span>
               <strong id="target-days-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Worked total</span>
+              <span class="metric-label">Travaillé</span>
               <strong id="worked-total-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Remaining target</span>
+              <span id="target-gap-label" class="metric-label">Reste à faire</span>
               <strong id="remaining-target-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Remaining workable</span>
+              <span id="remaining-capacity-label" class="metric-label">Marge restante</span>
               <strong
                 id="remaining-workable-value"
                 class="metric-value"
@@ -96,13 +92,13 @@
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Required pace</span>
+              <span id="required-metric-label" class="metric-label">Part à récupérer</span>
               <strong id="required-pace-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card status-card">
-              <span class="metric-label">Status</span>
-              <strong id="status-value" class="metric-value">On track</strong>
+              <span class="metric-label">Statut</span>
+              <strong id="status-value" class="metric-value">Faisable</strong>
             </article>
           </div>
 
@@ -112,33 +108,31 @@
         <section class="panel calendar-panel" aria-labelledby="calendar-title">
           <div class="section-header">
             <div>
-              <p class="section-kicker">Year view</p>
-              <h2 id="calendar-title">Calendar</h2>
+              <p class="section-kicker">Vue annuelle</p>
+              <h2 id="calendar-title">Calendrier</h2>
             </div>
             <p id="calendar-caption" class="section-copy"></p>
           </div>
 
-          <div class="legend" aria-label="Day status legend">
-            <span class="legend-item" data-status="available">Available</span>
-            <span class="legend-item" data-status="weekend">Weekend</span>
-            <span class="legend-item" data-status="administrative_holiday">
-              Holiday
-            </span>
-            <span class="legend-item" data-status="company_closed">
-              Company closed
-            </span>
-            <span class="legend-item" data-status="mandated_day_off">
-              Mandated off
-            </span>
-            <span class="legend-item" data-status="not_worked">
-              Not worked
-            </span>
-            <span class="legend-item" data-status="worked_half">
-              Half day
-            </span>
-            <span class="legend-item" data-status="worked_full">
-              Full day
-            </span>
+          <div class="legend" aria-label="Légende des statuts">
+            <span class="legend-item" data-status="worked">Travaillé</span>
+            <span class="legend-item" data-status="half_day">0,5</span>
+            <span class="legend-item" data-status="vacation">Congé</span>
+            <span class="legend-item" data-status="closed">Fermé</span>
+            <span class="legend-item" data-status="holiday">Jour férié</span>
+            <span class="legend-item" data-status="weekend">Week-end</span>
+          </div>
+
+          <div id="day-editor" class="day-editor" data-empty="true">
+            <div class="day-editor-copy">
+              <p class="section-kicker">Saisie</p>
+              <h3 id="selected-day-title">Cliquez sur un jour</h3>
+              <p id="selected-day-hint" class="section-copy">
+                Choisissez ensuite s'il est travaillé, en congé, fermé, férié
+                ou saisi à 0,5.
+              </p>
+            </div>
+            <div id="day-action-list" class="day-actions"></div>
           </div>
 
           <div id="calendar-root" class="calendar-root"></div>
@@ -146,6 +140,11 @@
       </main>
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script defer src="./src/lib/date-utils.js"></script>
+    <script defer src="./src/data/holidays-fr.js"></script>
+    <script defer src="./src/data/storage.js"></script>
+    <script defer src="./src/core/calculations.js"></script>
+    <script defer src="./src/ui/calendar.js"></script>
+    <script defer src="./src/app.js"></script>
   </body>
 </html>
