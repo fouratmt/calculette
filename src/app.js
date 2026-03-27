@@ -42,6 +42,7 @@
     targetDaysInput: document.querySelector("#target-days-input"),
     targetDaysValue: document.querySelector("#target-days-value"),
     workedTotalValue: document.querySelector("#worked-total-value"),
+    notWorkedDaysValue: document.querySelector("#not-worked-days-value"),
     targetGapLabel: document.querySelector("#target-gap-label"),
     remainingTargetValue: document.querySelector("#remaining-target-value"),
     remainingCapacityLabel: document.querySelector("#remaining-capacity-label"),
@@ -78,7 +79,12 @@
   }
 
   function getShortcutHint() {
-    return "Raccourcis : T travaillé, D demi-journée, C congé, F fermé, J jour férié, R réinitialiser. Maj + clic sélectionne une plage.";
+    return "Raccourcis : T travaillé, D demi-journée, C congé, F fermé, J jour férié, R réinitialiser. Maj + clic sélectionne une plage. Échap annule la sélection.";
+  }
+
+  function clearSelection() {
+    uiState.anchorDayIso = null;
+    uiState.selectedDayIsos = [];
   }
 
   function isDayEditable(isoDate, holidaysByIso) {
@@ -215,6 +221,13 @@
   }
 
   function handleKeyboardShortcuts(event) {
+    if (event.key === "Escape" && uiState.selectedDayIsos.length) {
+      event.preventDefault();
+      clearSelection();
+      render();
+      return;
+    }
+
     if (!uiState.selectedDayIsos.length) {
       return;
     }
@@ -248,24 +261,50 @@
 
   function buildPaceCopy(snapshot) {
     if (snapshot.overTarget > 0) {
+      if (snapshot.reducibleDays <= 0) {
+        return `Vous dépassez l'objectif de ${formatNumber(
+          snapshot.overTarget,
+        )} jours et il n'y a plus de jours futurs à retirer dans le planning.`;
+      }
+
+      if (snapshot.reducibleDays < snapshot.overTarget) {
+        return `Vous dépassez l'objectif de ${formatNumber(
+          snapshot.overTarget,
+        )} jours, mais il ne reste que ${formatNumber(
+          snapshot.reducibleDays,
+        )} jours retirables dans le planning futur.`;
+      }
+
       return `Vous dépassez l'objectif de ${formatNumber(
         snapshot.overTarget,
-      )} jours. Marquez des congés, fermetures ou demi-journées pour revenir à la cible.`;
+      )} jours. Il faut retirer ${formatNumber(
+        snapshot.overTarget,
+      )} jours travaillés, soit ${formatNumber(
+        snapshot.requiredUtilizationRate * 100,
+      )} % des jours retirables.`;
     }
 
     if (snapshot.remainingTarget <= 0) {
       return "L'objectif annuel est atteint. N'ajoutez pas plus de jours travaillés.";
     }
 
-    if (snapshot.remainingWorkableDays <= 0) {
-      return "Il ne reste plus de marge récupérable dans le planning actuel pour atteindre l'objectif.";
+    if (snapshot.recoverableDays <= 0) {
+      return "Il n'y a plus de jours récupérables dans le planning actuel pour atteindre l'objectif.";
+    }
+
+    if (snapshot.recoverableDays < snapshot.remainingTarget) {
+      return `Il manque encore ${formatNumber(
+        snapshot.remainingTarget,
+      )} jours à récupérer, mais le planning ne contient que ${formatNumber(
+        snapshot.recoverableDays,
+      )} jours récupérables.`;
     }
 
     return `Il faut reconvertir ${formatNumber(
       snapshot.remainingTarget,
     )} jours de votre planning en jours travaillés. Cela représente ${formatNumber(
       snapshot.requiredUtilizationRate * 100,
-    )} % de la marge restante.`;
+    )} % des jours récupérables.`;
   }
 
   function readTargetDaysInput() {
@@ -287,6 +326,9 @@
     elements.workedTotalValue.textContent = formatNumber(
       snapshot.workedEquivalentDays,
     );
+    elements.notWorkedDaysValue.textContent = formatNumber(
+      snapshot.notWorkedDays,
+    );
     if (snapshot.overTarget > 0) {
       elements.targetGapLabel.textContent = "Jours à retirer";
       elements.remainingTargetValue.textContent = formatNumber(
@@ -301,15 +343,32 @@
         snapshot.remainingTarget,
       );
     }
-    elements.remainingCapacityLabel.textContent = "Marge restante";
-    elements.remainingWorkableValue.textContent = formatNumber(
-      snapshot.remainingWorkableDays,
-    );
-    elements.requiredMetricLabel.textContent = "Part à récupérer";
-    elements.requiredPaceValue.textContent =
-      snapshot.remainingWorkableDays > 0
-        ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
-        : "n/a";
+    if (snapshot.adjustmentMode === "reduce") {
+      elements.remainingCapacityLabel.textContent = "Jours retirables";
+      elements.remainingWorkableValue.textContent = formatNumber(
+        snapshot.reducibleDays,
+      );
+      elements.requiredMetricLabel.textContent = "Part à retirer";
+      elements.requiredPaceValue.textContent =
+        snapshot.reducibleDays > 0
+          ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
+          : "n/a";
+    } else if (snapshot.adjustmentMode === "recover") {
+      elements.remainingCapacityLabel.textContent = "Jours récupérables";
+      elements.remainingWorkableValue.textContent = formatNumber(
+        snapshot.recoverableDays,
+      );
+      elements.requiredMetricLabel.textContent = "Part à récupérer";
+      elements.requiredPaceValue.textContent =
+        snapshot.recoverableDays > 0
+          ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
+          : "n/a";
+    } else {
+      elements.remainingCapacityLabel.textContent = "Jours ajustables";
+      elements.remainingWorkableValue.textContent = "0";
+      elements.requiredMetricLabel.textContent = "Part à ajuster";
+      elements.requiredPaceValue.textContent = "0 %";
+    }
     elements.statusValue.textContent = snapshot.statusLabel;
     elements.statusCard.dataset.tone = snapshot.statusTone;
     elements.paceCopy.textContent = buildPaceCopy(snapshot);
@@ -403,8 +462,7 @@
       uiState.anchorDayIso &&
       !uiState.anchorDayIso.startsWith(`${state.year}-`)
     ) {
-      uiState.anchorDayIso = null;
-      uiState.selectedDayIsos = [];
+      clearSelection();
     }
     saveState(state);
     render();

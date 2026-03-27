@@ -102,6 +102,46 @@
     return status === "closed" || status === "holiday" || status === "weekend";
   }
 
+  function getRecoverableCapacity(status) {
+    if (status === "vacation") {
+      return 1;
+    }
+
+    if (status === "half_day") {
+      return 0.5;
+    }
+
+    if (status === "available") {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  function getReducibleCapacity(status) {
+    if (status === "worked") {
+      return 1;
+    }
+
+    if (status === "half_day") {
+      return 0.5;
+    }
+
+    return 0;
+  }
+
+  function getNotWorkedEquivalent(status) {
+    if (status === "vacation" || status === "closed" || status === "available") {
+      return 1;
+    }
+
+    if (status === "half_day") {
+      return 0.5;
+    }
+
+    return 0;
+  }
+
   function getStatusTone(
     overTarget,
     requiredUtilizationRate,
@@ -171,9 +211,12 @@
 
     let workedEquivalentDays = 0;
     let totalLegalWorkdays = 0;
-    let remainingWorkableDays = 0;
+    let recoverableDays = 0;
+    let reducibleDays = 0;
     let forcedOffDays = 0;
+    let closedDays = 0;
     let vacationDays = 0;
+    let notWorkedDays = 0;
 
     for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
       const monthDays = getMonthDays(state.year, monthIndex);
@@ -198,9 +241,15 @@
           forcedOffDays += 1;
         }
 
+        if (record.status === "closed") {
+          closedDays += 1;
+        }
+
         if (record.status === "vacation") {
           vacationDays += 1;
         }
+
+        notWorkedDays += getNotWorkedEquivalent(record.status);
 
         const isRemainingWindow =
           state.year > effectiveReferenceDate.getFullYear() ||
@@ -208,18 +257,25 @@
             date >= effectiveReferenceDate);
 
         if (isRemainingWindow) {
-          remainingWorkableDays += meta.remainingCapacity;
+          recoverableDays += getRecoverableCapacity(record.status);
+          reducibleDays += getReducibleCapacity(record.status);
         }
       }
     }
 
     const overTarget = Math.max(0, workedEquivalentDays - state.targetDays);
     const remainingTarget = Math.max(0, state.targetDays - workedEquivalentDays);
+    const adjustmentMode =
+      overTarget > 0 ? "reduce" : remainingTarget > 0 ? "recover" : "none";
+    const remainingWorkableDays =
+      adjustmentMode === "reduce" ? reducibleDays : adjustmentMode === "recover" ? recoverableDays : 0;
     const requiredUtilizationRate =
       remainingWorkableDays > 0 ? remainingTarget / remainingWorkableDays : 0;
     const statusTone = getStatusTone(
       overTarget,
-      requiredUtilizationRate,
+      adjustmentMode === "reduce" && reducibleDays > 0
+        ? overTarget / reducibleDays
+        : requiredUtilizationRate,
       remainingTarget,
       remainingWorkableDays,
     );
@@ -231,11 +287,19 @@
       workedEquivalentDays,
       totalLegalWorkdays,
       forcedOffDays,
+      closedDays,
       vacationDays,
+      notWorkedDays,
       overTarget,
       remainingTarget,
+      recoverableDays,
+      reducibleDays,
+      adjustmentMode,
       remainingWorkableDays,
-      requiredUtilizationRate,
+      requiredUtilizationRate:
+        adjustmentMode === "reduce" && reducibleDays > 0
+          ? overTarget / reducibleDays
+          : requiredUtilizationRate,
       statusTone,
       statusLabel: getStatusLabel(statusTone),
     };

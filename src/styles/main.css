@@ -375,6 +375,7 @@ select {
   place-items: center;
   gap: 0.12rem;
   aspect-ratio: 1 / 1;
+  position: relative;
   cursor: pointer;
   border: 1px solid rgba(27, 37, 46, 0.08);
   border-radius: 14px;
@@ -390,8 +391,31 @@ select {
 }
 
 .day-tile.is-selected {
-  border-color: rgba(15, 127, 103, 0.65);
-  box-shadow: 0 0 0 3px rgba(15, 127, 103, 0.12);
+  z-index: 1;
+  border-color: rgba(15, 127, 103, 0.92);
+  box-shadow:
+    0 0 0 4px rgba(15, 127, 103, 0.28),
+    0 0 0 8px rgba(15, 127, 103, 0.08),
+    0 14px 28px rgba(15, 127, 103, 0.16);
+  transform: translateY(-1px) scale(1.04);
+}
+
+.day-tile.is-selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 13px;
+  background: linear-gradient(180deg, rgba(15, 127, 103, 0.12), rgba(15, 127, 103, 0.04));
+  pointer-events: none;
+}
+
+.day-tile.is-selected::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 2px solid rgba(15, 127, 103, 0.42);
+  border-radius: 16px;
+  pointer-events: none;
 }
 
 .day-tile.is-locked,
@@ -455,10 +479,14 @@ select {
 }
 
 .day-number {
+  position: relative;
+  z-index: 1;
   font-weight: 600;
 }
 
 .day-meta {
+  position: relative;
+  z-index: 1;
   min-height: 0.8rem;
   color: currentColor;
   font-size: 0.58rem;
