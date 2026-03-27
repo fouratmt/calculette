@@ -206,7 +206,10 @@ select {
 }
 
 .status-card .metric-value {
-  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
+  font-size: clamp(1rem, 1.45vw, 1.35rem);
+  line-height: 1.15;
+  white-space: normal;
+  text-wrap: balance;
 }
 
 .summary-copy {
@@ -574,13 +577,41 @@ select {
 }
 
 .app-footer {
-  padding: 1.25rem 0 0.25rem;
+  padding: 1.5rem 0 0.4rem;
 }
 
-.app-footer p {
+.app-footer-inner {
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(135deg, rgba(15, 127, 103, 0.12), rgba(255, 255, 255, 0.92)),
+    rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(15, 127, 103, 0.18);
+  box-shadow: 0 12px 28px rgba(26, 32, 40, 0.08);
+}
+
+.app-footer-title,
+.app-footer-copy,
+.app-footer-meta {
   margin: 0;
-  color: var(--muted);
+}
+
+.app-footer-title {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.app-footer-copy {
+  margin-top: 0.35rem;
+  color: var(--ink);
   line-height: 1.6;
+}
+
+.app-footer-meta {
+  margin-top: 0.45rem;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 @media (max-width: 760px) {

@@ -86,21 +86,6 @@
               <strong id="remaining-target-value" class="metric-value">0</strong>
             </article>
 
-            <article id="adjustable-days-card" class="metric-card">
-              <span id="remaining-capacity-label" class="metric-label">Jours ajustables</span>
-              <strong
-                id="remaining-workable-value"
-                class="metric-value"
-              >
-                0
-              </strong>
-            </article>
-
-            <article id="required-share-card" class="metric-card">
-              <span id="required-metric-label" class="metric-label">Part à ajuster</span>
-              <strong id="required-pace-value" class="metric-value">0</strong>
-            </article>
-
             <article class="metric-card status-card">
               <span class="metric-label">Statut</span>
               <strong id="status-value" class="metric-value">Faisable</strong>
@@ -108,6 +93,39 @@
           </div>
 
           <p id="pace-copy" class="summary-copy"></p>
+        </section>
+
+        <section class="panel calendar-panel" aria-labelledby="calendar-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Vue annuelle</p>
+              <h2 id="calendar-title">Calendrier</h2>
+            </div>
+            <p id="calendar-caption" class="section-copy"></p>
+          </div>
+
+          <div class="legend" aria-label="Légende des statuts">
+            <span class="legend-item" data-status="worked">Travaillé</span>
+            <span class="legend-item" data-status="half_day">0,5</span>
+            <span class="legend-item" data-status="vacation">Congé</span>
+            <span class="legend-item" data-status="closed">Fermé</span>
+            <span class="legend-item" data-status="holiday">Jour férié</span>
+            <span class="legend-item" data-status="weekend">Week-end</span>
+          </div>
+
+          <div id="day-editor" class="day-editor" data-empty="true">
+            <div class="day-editor-copy">
+              <p class="section-kicker">Saisie</p>
+              <h3 id="selected-day-title">Cliquez sur un jour</h3>
+              <p id="selected-day-hint" class="section-copy">
+                Choisissez ensuite s'il est travaillé, en congé, fermé, férié
+                ou saisi à 0,5.
+              </p>
+            </div>
+            <div id="day-action-list" class="day-actions"></div>
+          </div>
+
+          <div id="calendar-root" class="calendar-root"></div>
         </section>
 
         <section class="panel session-panel" aria-labelledby="session-title">
@@ -124,16 +142,6 @@
 
           <div class="session-grid">
             <div class="session-meta-grid">
-              <article class="session-card">
-                <span class="metric-label">Session</span>
-                <strong id="session-id-value" class="session-value">-</strong>
-              </article>
-
-              <article class="session-card">
-                <span class="metric-label">Créée le</span>
-                <strong id="session-created-value" class="session-value">-</strong>
-              </article>
-
               <article class="session-card">
                 <span class="metric-label">Dernière sauvegarde</span>
                 <strong id="session-updated-value" class="session-value">-</strong>
@@ -184,46 +192,17 @@
             Les données restent dans ce navigateur tant que vous ne videz pas la session.
           </p>
         </section>
-
-        <section class="panel calendar-panel" aria-labelledby="calendar-title">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Vue annuelle</p>
-              <h2 id="calendar-title">Calendrier</h2>
-            </div>
-            <p id="calendar-caption" class="section-copy"></p>
-          </div>
-
-          <div class="legend" aria-label="Légende des statuts">
-            <span class="legend-item" data-status="worked">Travaillé</span>
-            <span class="legend-item" data-status="half_day">0,5</span>
-            <span class="legend-item" data-status="vacation">Congé</span>
-            <span class="legend-item" data-status="closed">Fermé</span>
-            <span class="legend-item" data-status="holiday">Jour férié</span>
-            <span class="legend-item" data-status="weekend">Week-end</span>
-          </div>
-
-          <div id="day-editor" class="day-editor" data-empty="true">
-            <div class="day-editor-copy">
-              <p class="section-kicker">Saisie</p>
-              <h3 id="selected-day-title">Cliquez sur un jour</h3>
-              <p id="selected-day-hint" class="section-copy">
-                Choisissez ensuite s'il est travaillé, en congé, fermé, férié
-                ou saisi à 0,5.
-              </p>
-            </div>
-            <div id="day-action-list" class="day-actions"></div>
-          </div>
-
-          <div id="calendar-root" class="calendar-root"></div>
-        </section>
       </main>
 
       <footer class="app-footer">
-        <p>
-          Calculette locale 2025-2027. Les calculs, la session et les sauvegardes
-          restent côté navigateur.
-        </p>
+        <div class="app-footer-inner">
+          <p class="app-footer-title">Calculette locale et privée</p>
+          <p class="app-footer-copy">
+            Les calculs et la session restent dans ce navigateur. Vous pouvez
+            exporter vos données en JSON à tout moment.
+          </p>
+          <p class="app-footer-meta">Périmètre actuel : années 2025, 2026 et 2027.</p>
+        </div>
       </footer>
     </div>
 

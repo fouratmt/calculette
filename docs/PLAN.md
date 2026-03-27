@@ -147,14 +147,13 @@ Show:
 - selected year
 - target days
 - worked total
+- not worked days
 - remaining target
-- remaining workable days
-- required average per remaining workable day
 - status badge
 
 Optional helper sentence:
 
-`You need to work about 4.0 days per week on average to hit your target.`
+`The current plan can still hit the target, but 12 remaining days need to be turned into worked days.`
 
 ### Calendar View
 

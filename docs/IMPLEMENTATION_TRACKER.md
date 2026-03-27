@@ -27,9 +27,9 @@ This file tracks the current implementation status against the product plan in `
 | Mobile-friendly behavior | Implemented | The layout collapses to a single-column calendar on narrow screens. |
 | Core counted values (`worked_full`, `worked_half`, blocked statuses) | Implemented | Counted values are handled through the simplified status metadata and remaining-capacity logic. |
 | Workable day definition | Implemented | Weekends, holidays, closures, and mandated days are treated as blocked. |
-| Core summary metrics | Implemented | Target, worked total, remaining target, remaining workable days, and required pace are calculated and displayed. |
+| Core summary metrics | Implemented | Target, worked total, non-worked days, remaining target, and status are displayed, while feasibility metrics still feed the helper copy. |
 | Status thresholds | Partial | Status categories exist, but the logic uses fixed thresholds instead of comparing with recent actual pace. |
-| Summary bar | Implemented | The summary is translated to French and renders target, worked total, remaining target, remaining capacity, pace, and status. |
+| Summary bar | Implemented | The summary is translated to French and renders target, worked total, non-worked days, remaining target, status, and helper copy about feasibility. |
 | Calendar visuals | Implemented | Status styling is in place with simplified French labels and interactive day selection. |
 | Day interaction menu | Implemented | Clicking a day opens a compact action area to set work, half-day, vacation, closure, holiday, or reset. |
 | Reset to default action | Implemented | A reset action removes the override and falls back to weekend, holiday, or available default rules. |

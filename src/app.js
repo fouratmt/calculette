@@ -51,13 +51,7 @@
     workedTotalValue: document.querySelector("#worked-total-value"),
     notWorkedDaysValue: document.querySelector("#not-worked-days-value"),
     targetGapLabel: document.querySelector("#target-gap-label"),
-    adjustableDaysCard: document.querySelector("#adjustable-days-card"),
     remainingTargetValue: document.querySelector("#remaining-target-value"),
-    remainingCapacityLabel: document.querySelector("#remaining-capacity-label"),
-    remainingWorkableValue: document.querySelector("#remaining-workable-value"),
-    requiredShareCard: document.querySelector("#required-share-card"),
-    requiredMetricLabel: document.querySelector("#required-metric-label"),
-    requiredPaceValue: document.querySelector("#required-pace-value"),
     statusValue: document.querySelector("#status-value"),
     paceCopy: document.querySelector("#pace-copy"),
     calendarCaption: document.querySelector("#calendar-caption"),
@@ -67,8 +61,6 @@
     selectedDayTitle: document.querySelector("#selected-day-title"),
     selectedDayHint: document.querySelector("#selected-day-hint"),
     dayActionList: document.querySelector("#day-action-list"),
-    sessionIdValue: document.querySelector("#session-id-value"),
-    sessionCreatedValue: document.querySelector("#session-created-value"),
     sessionUpdatedValue: document.querySelector("#session-updated-value"),
     sessionOverridesValue: document.querySelector("#session-overrides-value"),
     sessionSizeValue: document.querySelector("#session-size-value"),
@@ -347,22 +339,22 @@
     }
 
     if (snapshot.recoverableDays <= 0) {
-      return "Il n'y a plus de jours récupérables dans le planning actuel pour atteindre l'objectif.";
+      return "Le planning actuel ne contient plus de journées modifiables pour atteindre l'objectif.";
     }
 
     if (snapshot.recoverableDays < snapshot.remainingTarget) {
       return `Il manque encore ${formatNumber(
         snapshot.remainingTarget,
-      )} jours à récupérer, mais le planning ne contient que ${formatNumber(
+      )} jours pour atteindre l'objectif, mais le planning ne contient que ${formatNumber(
         snapshot.recoverableDays,
-      )} jours récupérables.`;
+      )} journées encore modifiables.`;
     }
 
     return `Il faut reconvertir ${formatNumber(
       snapshot.remainingTarget,
     )} jours de votre planning en jours travaillés. Cela représente ${formatNumber(
       snapshot.requiredUtilizationRate * 100,
-    )} % des jours récupérables.`;
+    )} % des journées encore modifiables.`;
   }
 
   function readTargetDaysInput() {
@@ -401,22 +393,6 @@
         snapshot.remainingTarget,
       );
     }
-    if (snapshot.adjustmentMode === "recover") {
-      elements.adjustableDaysCard.hidden = false;
-      elements.requiredShareCard.hidden = false;
-      elements.remainingCapacityLabel.textContent = "Jours récupérables";
-      elements.remainingWorkableValue.textContent = formatNumber(
-        snapshot.recoverableDays,
-      );
-      elements.requiredMetricLabel.textContent = "Part à récupérer";
-      elements.requiredPaceValue.textContent =
-        snapshot.recoverableDays > 0
-          ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
-          : "n/a";
-    } else {
-      elements.adjustableDaysCard.hidden = true;
-      elements.requiredShareCard.hidden = true;
-    }
     elements.statusValue.textContent = snapshot.statusLabel;
     elements.statusCard.dataset.tone = snapshot.statusTone;
     elements.paceCopy.textContent = buildPaceCopy(snapshot);
@@ -425,14 +401,6 @@
 
   function renderSessionInfo() {
     const overrideCount = Object.keys(state.dayOverrides).length;
-    const sessionId = state.meta?.sessionId || "";
-    elements.sessionIdValue.textContent = sessionId
-      ? sessionId.slice(0, 8).toUpperCase()
-      : "—";
-    elements.sessionIdValue.title = sessionId;
-    elements.sessionCreatedValue.textContent = formatDateTime(
-      state.meta?.createdAt,
-    );
     elements.sessionUpdatedValue.textContent = formatDateTime(
       state.meta?.updatedAt,
     );
