@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculette Jour/Homme</title>
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Freelance planning</p>
+        <h1>Calculette Jour/Homme</h1>
+        <p class="hero-copy">
+          Track worked days, holidays, and closures across a year with a clear
+          pace summary.
+        </p>
+      </header>
+
+      <main class="layout">
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Setup</p>
+              <h2 id="controls-title">Year settings</h2>
+            </div>
+            <p class="section-copy">
+              French public holidays are generated locally for the selected
+              year.
+            </p>
+          </div>
+
+          <form id="settings-form" class="settings-grid">
+            <label class="field">
+              <span>Selected year</span>
+              <input
+                id="year-input"
+                name="year"
+                type="number"
+                min="2020"
+                max="2100"
+                step="1"
+              />
+            </label>
+
+            <label class="field">
+              <span>Target days</span>
+              <input
+                id="target-days-input"
+                name="targetDays"
+                type="number"
+                min="0"
+                max="366"
+                step="0.5"
+              />
+            </label>
+          </form>
+        </section>
+
+        <section class="panel summary-panel" aria-labelledby="summary-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Summary</p>
+              <h2 id="summary-title">Progress snapshot</h2>
+            </div>
+            <p class="section-copy">
+              This first pass resolves weekends and French holidays out of the
+              box.
+            </p>
+          </div>
+
+          <div class="summary-grid">
+            <article class="metric-card">
+              <span class="metric-label">Target days</span>
+              <strong id="target-days-value" class="metric-value">0</strong>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Worked total</span>
+              <strong id="worked-total-value" class="metric-value">0</strong>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Remaining target</span>
+              <strong id="remaining-target-value" class="metric-value">0</strong>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Remaining workable</span>
+              <strong
+                id="remaining-workable-value"
+                class="metric-value"
+              >
+                0
+              </strong>
+            </article>
+
+            <article class="metric-card">
+              <span class="metric-label">Required pace</span>
+              <strong id="required-pace-value" class="metric-value">0</strong>
+            </article>
+
+            <article class="metric-card status-card">
+              <span class="metric-label">Status</span>
+              <strong id="status-value" class="metric-value">On track</strong>
+            </article>
+          </div>
+
+          <p id="pace-copy" class="summary-copy"></p>
+        </section>
+
+        <section class="panel calendar-panel" aria-labelledby="calendar-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Year view</p>
+              <h2 id="calendar-title">Calendar</h2>
+            </div>
+            <p id="calendar-caption" class="section-copy"></p>
+          </div>
+
+          <div class="legend" aria-label="Day status legend">
+            <span class="legend-item" data-status="available">Available</span>
+            <span class="legend-item" data-status="weekend">Weekend</span>
+            <span class="legend-item" data-status="administrative_holiday">
+              Holiday
+            </span>
+            <span class="legend-item" data-status="company_closed">
+              Company closed
+            </span>
+            <span class="legend-item" data-status="mandated_day_off">
+              Mandated off
+            </span>
+            <span class="legend-item" data-status="not_worked">
+              Not worked
+            </span>
+            <span class="legend-item" data-status="worked_half">
+              Half day
+            </span>
+            <span class="legend-item" data-status="worked_full">
+              Full day
+            </span>
+          </div>
+
+          <div id="calendar-root" class="calendar-root"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
