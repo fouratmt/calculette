@@ -11,6 +11,9 @@
     DEFAULT_TARGET_DAYS,
     createDefaultState,
     loadState,
+    removeStoredState,
+    resetState,
+    sanitizeState,
     saveState,
   } = global.Calculette.storage;
 
@@ -29,8 +32,12 @@
     month: "long",
     year: "numeric",
   });
+  const dateTimeFormatter = new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
 
-  const state = loadState();
+  let state = loadState();
   const uiState = {
     anchorDayIso: null,
     selectedDayIsos: [],
@@ -44,9 +51,11 @@
     workedTotalValue: document.querySelector("#worked-total-value"),
     notWorkedDaysValue: document.querySelector("#not-worked-days-value"),
     targetGapLabel: document.querySelector("#target-gap-label"),
+    adjustableDaysCard: document.querySelector("#adjustable-days-card"),
     remainingTargetValue: document.querySelector("#remaining-target-value"),
     remainingCapacityLabel: document.querySelector("#remaining-capacity-label"),
     remainingWorkableValue: document.querySelector("#remaining-workable-value"),
+    requiredShareCard: document.querySelector("#required-share-card"),
     requiredMetricLabel: document.querySelector("#required-metric-label"),
     requiredPaceValue: document.querySelector("#required-pace-value"),
     statusValue: document.querySelector("#status-value"),
@@ -58,6 +67,17 @@
     selectedDayTitle: document.querySelector("#selected-day-title"),
     selectedDayHint: document.querySelector("#selected-day-hint"),
     dayActionList: document.querySelector("#day-action-list"),
+    sessionIdValue: document.querySelector("#session-id-value"),
+    sessionCreatedValue: document.querySelector("#session-created-value"),
+    sessionUpdatedValue: document.querySelector("#session-updated-value"),
+    sessionOverridesValue: document.querySelector("#session-overrides-value"),
+    sessionSizeValue: document.querySelector("#session-size-value"),
+    exportSessionButton: document.querySelector("#export-session-button"),
+    importSessionButton: document.querySelector("#import-session-button"),
+    resetYearButton: document.querySelector("#reset-year-button"),
+    clearSessionButton: document.querySelector("#clear-session-button"),
+    sessionImportInput: document.querySelector("#session-import-input"),
+    sessionFeedback: document.querySelector("#session-feedback"),
   };
 
   const dayActions = [
@@ -73,6 +93,36 @@
     return numberFormatter.format(value);
   }
 
+  function formatDateTime(value) {
+    const parsedDate = new Date(value);
+    if (!Number.isFinite(parsedDate.getTime())) {
+      return "—";
+    }
+
+    return dateTimeFormatter.format(parsedDate);
+  }
+
+  function formatBytes(byteCount) {
+    if (byteCount < 1024) {
+      return `${byteCount} o`;
+    }
+
+    if (byteCount < 1024 * 1024) {
+      return `${formatNumber(byteCount / 1024)} Ko`;
+    }
+
+    return `${formatNumber(byteCount / (1024 * 1024))} Mo`;
+  }
+
+  function getSerializedStateSize(value) {
+    const serializedState = JSON.stringify(value);
+    if (typeof TextEncoder === "function") {
+      return new TextEncoder().encode(serializedState).length;
+    }
+
+    return serializedState.length;
+  }
+
   function parseIsoDate(isoDate) {
     const [year, month, day] = isoDate.split("-").map(Number);
     return new Date(year, month - 1, day, 12, 0, 0, 0);
@@ -85,6 +135,16 @@
   function clearSelection() {
     uiState.anchorDayIso = null;
     uiState.selectedDayIsos = [];
+  }
+
+  function persistState() {
+    state = saveState(state);
+    return state;
+  }
+
+  function setSessionFeedback(message, tone) {
+    elements.sessionFeedback.textContent = message;
+    elements.sessionFeedback.dataset.tone = tone || "neutral";
   }
 
   function isDayEditable(isoDate, holidaysByIso) {
@@ -202,7 +262,7 @@
       }
     }
 
-    saveState(state);
+    persistState();
     render();
   }
 
@@ -272,16 +332,14 @@
           snapshot.overTarget,
         )} jours, mais il ne reste que ${formatNumber(
           snapshot.reducibleDays,
-        )} jours retirables dans le planning futur.`;
+        )} jours travaillés futurs modifiables dans le planning.`;
       }
 
       return `Vous dépassez l'objectif de ${formatNumber(
         snapshot.overTarget,
-      )} jours. Il faut retirer ${formatNumber(
+      )} jours. Il faut transformer ${formatNumber(
         snapshot.overTarget,
-      )} jours travaillés, soit ${formatNumber(
-        snapshot.requiredUtilizationRate * 100,
-      )} % des jours retirables.`;
+      )} jours travaillés futurs en congés, fermetures ou demi-journées.`;
     }
 
     if (snapshot.remainingTarget <= 0) {
@@ -343,17 +401,9 @@
         snapshot.remainingTarget,
       );
     }
-    if (snapshot.adjustmentMode === "reduce") {
-      elements.remainingCapacityLabel.textContent = "Jours retirables";
-      elements.remainingWorkableValue.textContent = formatNumber(
-        snapshot.reducibleDays,
-      );
-      elements.requiredMetricLabel.textContent = "Part à retirer";
-      elements.requiredPaceValue.textContent =
-        snapshot.reducibleDays > 0
-          ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
-          : "n/a";
-    } else if (snapshot.adjustmentMode === "recover") {
+    if (snapshot.adjustmentMode === "recover") {
+      elements.adjustableDaysCard.hidden = false;
+      elements.requiredShareCard.hidden = false;
       elements.remainingCapacityLabel.textContent = "Jours récupérables";
       elements.remainingWorkableValue.textContent = formatNumber(
         snapshot.recoverableDays,
@@ -364,15 +414,122 @@
           ? `${formatNumber(snapshot.requiredUtilizationRate * 100)} %`
           : "n/a";
     } else {
-      elements.remainingCapacityLabel.textContent = "Jours ajustables";
-      elements.remainingWorkableValue.textContent = "0";
-      elements.requiredMetricLabel.textContent = "Part à ajuster";
-      elements.requiredPaceValue.textContent = "0 %";
+      elements.adjustableDaysCard.hidden = true;
+      elements.requiredShareCard.hidden = true;
     }
     elements.statusValue.textContent = snapshot.statusLabel;
     elements.statusCard.dataset.tone = snapshot.statusTone;
     elements.paceCopy.textContent = buildPaceCopy(snapshot);
     elements.calendarCaption.textContent = `${snapshot.totalLegalWorkdays} jours ouvrables théoriques, ${snapshot.holidaysByIso.size} jours fériés générés, ${snapshot.vacationDays} congés saisis.`;
+  }
+
+  function renderSessionInfo() {
+    const overrideCount = Object.keys(state.dayOverrides).length;
+    const sessionId = state.meta?.sessionId || "";
+    elements.sessionIdValue.textContent = sessionId
+      ? sessionId.slice(0, 8).toUpperCase()
+      : "—";
+    elements.sessionIdValue.title = sessionId;
+    elements.sessionCreatedValue.textContent = formatDateTime(
+      state.meta?.createdAt,
+    );
+    elements.sessionUpdatedValue.textContent = formatDateTime(
+      state.meta?.updatedAt,
+    );
+    elements.sessionOverridesValue.textContent = formatNumber(overrideCount);
+    elements.sessionSizeValue.textContent = formatBytes(
+      getSerializedStateSize(state),
+    );
+
+    if (!elements.sessionFeedback.textContent.trim()) {
+      setSessionFeedback(
+        "Les données restent dans ce navigateur tant que vous ne videz pas la session.",
+        "neutral",
+      );
+    }
+  }
+
+  function downloadSessionExport() {
+    const exportPayload = JSON.stringify(
+      {
+        application: "calculette-jours-homme",
+        exportedAt: new Date().toISOString(),
+        state,
+      },
+      null,
+      2,
+    );
+    const filename = `calculette-jours-homme-${state.year}-${toIsoDate(
+      new Date(),
+    )}.json`;
+    const downloadUrl = URL.createObjectURL(
+      new Blob([exportPayload], { type: "application/json" }),
+    );
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = filename;
+    downloadLink.click();
+    setTimeout(function revokeDownloadUrl() {
+      URL.revokeObjectURL(downloadUrl);
+    }, 0);
+    setSessionFeedback(`Export créé : ${filename}.`, "success");
+  }
+
+  function readTextFile(file) {
+    return new Promise(function readFile(resolve, reject) {
+      const fileReader = new FileReader();
+      fileReader.onload = function handleLoad() {
+        resolve(String(fileReader.result || ""));
+      };
+      fileReader.onerror = function handleError() {
+        reject(new Error("read_error"));
+      };
+      fileReader.readAsText(file);
+    });
+  }
+
+  async function handleSessionImport(event) {
+    const selectedFile = event.target.files && event.target.files[0];
+    if (!selectedFile) {
+      return;
+    }
+
+    try {
+      const rawContent = await readTextFile(selectedFile);
+      const parsedContent = JSON.parse(rawContent);
+      const importedState =
+        parsedContent &&
+        typeof parsedContent === "object" &&
+        parsedContent.state
+          ? parsedContent.state
+          : parsedContent;
+
+      state = saveState(sanitizeState(importedState));
+      clearSelection();
+      render();
+      setSessionFeedback(`Import réussi depuis ${selectedFile.name}.`, "success");
+    } catch {
+      setSessionFeedback("Import impossible : fichier JSON invalide.", "error");
+    } finally {
+      elements.sessionImportInput.value = "";
+    }
+  }
+
+  function handleYearReset() {
+    state = resetState(state.year);
+    clearSelection();
+    render();
+    setSessionFeedback(
+      `Les données de ${state.year} ont été réinitialisées.`,
+      "neutral",
+    );
+  }
+
+  function handleSessionClear() {
+    state = saveState(removeStoredState());
+    clearSelection();
+    render();
+    setSessionFeedback("La session locale a été vidée et recréée.", "neutral");
   }
 
   function renderDayEditor(snapshot) {
@@ -442,6 +599,7 @@
     sanitizeSelection(editableDayIsoSet);
     syncInputs();
     renderSummary(snapshot);
+    renderSessionInfo();
     renderDayEditor(snapshot);
     renderCalendar(elements.calendarRoot, state, snapshot, {
       editableDayIsoSet,
@@ -464,12 +622,19 @@
     ) {
       clearSelection();
     }
-    saveState(state);
+    persistState();
     render();
   }
 
   elements.settingsForm.addEventListener("input", updateStateFromInputs);
   elements.settingsForm.addEventListener("change", updateStateFromInputs);
+  elements.exportSessionButton.addEventListener("click", downloadSessionExport);
+  elements.importSessionButton.addEventListener("click", function openImportDialog() {
+    elements.sessionImportInput.click();
+  });
+  elements.sessionImportInput.addEventListener("change", handleSessionImport);
+  elements.resetYearButton.addEventListener("click", handleYearReset);
+  elements.clearSessionButton.addEventListener("click", handleSessionClear);
   document.addEventListener("keydown", handleKeyboardShortcuts);
 
   render();

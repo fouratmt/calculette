@@ -2,6 +2,7 @@
   const STORAGE_KEY = "calculette-jours-homme/state";
   const DEFAULT_TARGET_DAYS = 216;
   const ALLOWED_YEARS = [2025, 2026, 2027];
+  const SESSION_SCHEMA_VERSION = 1;
   const VALID_OVERRIDE_STATUSES = new Set([
     "worked",
     "half_day",
@@ -19,6 +20,45 @@
     available: null,
     weekend: null,
   };
+
+  function generateSessionId() {
+    if (global.crypto && typeof global.crypto.randomUUID === "function") {
+      return global.crypto.randomUUID();
+    }
+
+    return `session-${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
+  }
+
+  function isValidTimestamp(value) {
+    if (typeof value !== "string") {
+      return false;
+    }
+
+    return Number.isFinite(new Date(value).getTime());
+  }
+
+  function createSessionMeta(candidateMeta) {
+    const nowIso = new Date().toISOString();
+    const createdAt = isValidTimestamp(candidateMeta?.createdAt)
+      ? candidateMeta.createdAt
+      : nowIso;
+    const updatedAt = isValidTimestamp(candidateMeta?.updatedAt)
+      ? candidateMeta.updatedAt
+      : createdAt;
+
+    return {
+      sessionId:
+        typeof candidateMeta?.sessionId === "string" &&
+        candidateMeta.sessionId.trim()
+          ? candidateMeta.sessionId
+          : generateSessionId(),
+      schemaVersion: SESSION_SCHEMA_VERSION,
+      createdAt,
+      updatedAt,
+    };
+  }
 
   function getDefaultYear() {
     const currentYear = new Date().getFullYear();
@@ -61,6 +101,7 @@
     return {
       year: safeYear,
       targetDays: DEFAULT_TARGET_DAYS,
+      meta: createSessionMeta(),
       settings: {
         countryHolidayPreset: "FR",
         weekendsAreBlocked: true,
@@ -122,6 +163,7 @@
         0,
         366,
       ),
+      meta: createSessionMeta(candidateState.meta),
       settings: {
         countryHolidayPreset: "FR",
         weekendsAreBlocked:
@@ -146,20 +188,43 @@
   }
 
   function saveState(state) {
+    const sanitizedState = sanitizeState(state);
+    sanitizedState.meta.updatedAt = new Date().toISOString();
+
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitizedState));
     } catch {
       // Ignore storage failures so the UI stays functional in private browsing.
     }
+
+    return sanitizedState;
+  }
+
+  function resetState(year) {
+    return saveState(createDefaultState(year));
+  }
+
+  function removeStoredState() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore storage failures to keep the UI usable.
+    }
+
+    return createDefaultState();
   }
 
   global.Calculette.storage = {
     ALLOWED_YEARS,
     DEFAULT_TARGET_DAYS,
+    STORAGE_KEY,
     VALID_OVERRIDE_STATUSES,
     createDefaultState,
     getDefaultYear,
     loadState,
+    removeStoredState,
+    resetState,
+    sanitizeState,
     saveState,
   };
 })(window);

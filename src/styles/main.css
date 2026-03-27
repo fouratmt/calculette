@@ -158,7 +158,7 @@ select {
 }
 
 .summary-grid {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
 .metric-card {
@@ -196,11 +196,17 @@ select {
 .metric-label {
   color: var(--muted);
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .metric-value {
   font-size: clamp(1.5rem, 2vw, 2.2rem);
   line-height: 1;
+  white-space: nowrap;
+}
+
+.status-card .metric-value {
+  font-size: clamp(1.1rem, 1.6vw, 1.45rem);
 }
 
 .summary-copy {
@@ -225,6 +231,7 @@ select {
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(27, 37, 46, 0.08);
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .legend-item::before {
@@ -292,6 +299,7 @@ select {
   padding: 0.65rem 0.9rem;
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  white-space: nowrap;
 }
 
 .day-action-button:hover {
@@ -310,6 +318,78 @@ select {
 
 .calendar-root {
   min-height: 320px;
+}
+
+.session-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.session-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.85rem;
+}
+
+.session-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(27, 37, 46, 0.08);
+}
+
+.session-value {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.session-button {
+  border: 1px solid rgba(27, 37, 46, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  white-space: nowrap;
+}
+
+.session-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(26, 32, 40, 0.08);
+}
+
+.session-button.is-secondary {
+  background: rgba(255, 241, 190, 0.55);
+}
+
+.session-button.is-danger {
+  background: rgba(240, 219, 217, 0.72);
+}
+
+.session-feedback {
+  margin: 1rem 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.session-feedback[data-tone="success"] {
+  color: var(--accent);
+}
+
+.session-feedback[data-tone="error"] {
+  color: #a3565f;
 }
 
 .calendar-grid {
@@ -348,6 +428,7 @@ select {
 .month-summary {
   color: var(--muted);
   font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .month-summary-worked {
@@ -490,6 +571,16 @@ select {
   min-height: 0.8rem;
   color: currentColor;
   font-size: 0.58rem;
+}
+
+.app-footer {
+  padding: 1.25rem 0 0.25rem;
+}
+
+.app-footer p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 @media (max-width: 760px) {

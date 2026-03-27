@@ -86,7 +86,7 @@
               <strong id="remaining-target-value" class="metric-value">0</strong>
             </article>
 
-            <article class="metric-card">
+            <article id="adjustable-days-card" class="metric-card">
               <span id="remaining-capacity-label" class="metric-label">Jours ajustables</span>
               <strong
                 id="remaining-workable-value"
@@ -96,7 +96,7 @@
               </strong>
             </article>
 
-            <article class="metric-card">
+            <article id="required-share-card" class="metric-card">
               <span id="required-metric-label" class="metric-label">Part à ajuster</span>
               <strong id="required-pace-value" class="metric-value">0</strong>
             </article>
@@ -108,6 +108,81 @@
           </div>
 
           <p id="pace-copy" class="summary-copy"></p>
+        </section>
+
+        <section class="panel session-panel" aria-labelledby="session-title">
+          <div class="section-header">
+            <div>
+              <p class="section-kicker">Session locale</p>
+              <h2 id="session-title">Données du navigateur</h2>
+            </div>
+            <p class="section-copy">
+              Exportez un JSON, importez une sauvegarde ou repartez d'une
+              session propre.
+            </p>
+          </div>
+
+          <div class="session-grid">
+            <div class="session-meta-grid">
+              <article class="session-card">
+                <span class="metric-label">Session</span>
+                <strong id="session-id-value" class="session-value">-</strong>
+              </article>
+
+              <article class="session-card">
+                <span class="metric-label">Créée le</span>
+                <strong id="session-created-value" class="session-value">-</strong>
+              </article>
+
+              <article class="session-card">
+                <span class="metric-label">Dernière sauvegarde</span>
+                <strong id="session-updated-value" class="session-value">-</strong>
+              </article>
+
+              <article class="session-card">
+                <span class="metric-label">Jours personnalisés</span>
+                <strong id="session-overrides-value" class="session-value">0</strong>
+              </article>
+
+              <article class="session-card">
+                <span class="metric-label">Taille estimée</span>
+                <strong id="session-size-value" class="session-value">0 o</strong>
+              </article>
+            </div>
+
+            <div class="session-actions">
+              <button id="export-session-button" type="button" class="session-button">
+                Exporter JSON
+              </button>
+              <button id="import-session-button" type="button" class="session-button">
+                Importer JSON
+              </button>
+              <button
+                id="reset-year-button"
+                type="button"
+                class="session-button is-secondary"
+              >
+                Réinitialiser l'année
+              </button>
+              <button
+                id="clear-session-button"
+                type="button"
+                class="session-button is-danger"
+              >
+                Vider la session locale
+              </button>
+              <input
+                id="session-import-input"
+                type="file"
+                accept=".json,application/json"
+                hidden
+              />
+            </div>
+          </div>
+
+          <p id="session-feedback" class="session-feedback">
+            Les données restent dans ce navigateur tant que vous ne videz pas la session.
+          </p>
         </section>
 
         <section class="panel calendar-panel" aria-labelledby="calendar-title">
@@ -143,6 +218,13 @@
           <div id="calendar-root" class="calendar-root"></div>
         </section>
       </main>
+
+      <footer class="app-footer">
+        <p>
+          Calculette locale 2025-2027. Les calculs, la session et les sauvegardes
+          restent côté navigateur.
+        </p>
+      </footer>
     </div>
 
     <script defer src="./src/lib/date-utils.js"></script>
