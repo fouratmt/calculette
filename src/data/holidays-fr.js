@@ -49,7 +49,7 @@
         return [
           toIsoDate(holiday.date),
           Object.assign({}, holiday, {
-            status: "holiday",
+            status: "administrative_holiday",
           }),
         ];
       }),

@@ -253,23 +253,23 @@ select {
   color: #8b95a0;
 }
 
-.legend-item[data-status="vacation"] {
+.legend-item[data-status="not_worked"] {
   color: #a3565f;
 }
 
-.legend-item[data-status="half_day"] {
+.legend-item[data-status="worked_half"] {
   color: #b38a00;
 }
 
-.legend-item[data-status="worked"] {
+.legend-item[data-status="worked_full"] {
   color: #177957;
 }
 
-.legend-item[data-status="holiday"] {
+.legend-item[data-status="administrative_holiday"] {
   color: var(--holiday-ink);
 }
 
-.legend-item[data-status="closed"] {
+.legend-item[data-status="company_closed"] {
   color: var(--closed);
 }
 
@@ -524,25 +524,25 @@ select {
   color: #6f7b86;
 }
 
-.day-tile[data-status="holiday"] {
+.day-tile[data-status="administrative_holiday"] {
   background: var(--holiday);
   color: var(--holiday-ink);
 }
 
-.day-tile[data-status="vacation"] {
+.day-tile[data-status="not_worked"] {
   background: var(--not-worked);
 }
 
-.day-tile[data-status="half_day"] {
+.day-tile[data-status="worked_half"] {
   background:
     linear-gradient(135deg, var(--worked-half) 0 48%, rgba(255, 255, 255, 0.94) 48% 52%, var(--worked-half) 52% 100%);
 }
 
-.day-tile[data-status="worked"] {
+.day-tile[data-status="worked_full"] {
   background: var(--worked-full);
 }
 
-.day-tile[data-status="worked"].is-planned {
+.day-tile[data-status="worked_full"].is-planned {
   background:
     repeating-linear-gradient(
       135deg,
@@ -552,7 +552,7 @@ select {
     linear-gradient(180deg, rgba(201, 240, 222, 0.92), rgba(201, 240, 222, 0.7));
 }
 
-.day-tile[data-status="closed"] {
+.day-tile[data-status="company_closed"] {
   background: var(--closed);
   color: #fff;
 }

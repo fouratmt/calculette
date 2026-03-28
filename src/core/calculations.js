@@ -15,35 +15,35 @@
       countedValue: 0,
       remainingCapacity: 1,
     },
-    worked: {
+    worked_full: {
       label: "Travaillé",
       shortLabel: "1",
       blocked: false,
       countedValue: 1,
       remainingCapacity: 0,
     },
-    half_day: {
+    worked_half: {
       label: "Travaillé 0,5",
       shortLabel: "0,5",
       blocked: false,
       countedValue: 0.5,
       remainingCapacity: 0.5,
     },
-    vacation: {
+    not_worked: {
       label: "Congé",
-      shortLabel: "CP",
+      shortLabel: "CG",
       blocked: false,
       countedValue: 0,
       remainingCapacity: 1,
     },
-    closed: {
-      label: "Fermé",
+    company_closed: {
+      label: "Fermeture",
       shortLabel: "FER",
       blocked: true,
       countedValue: 0,
       remainingCapacity: 0,
     },
-    holiday: {
+    administrative_holiday: {
       label: "Jour férié",
       shortLabel: "JF",
       blocked: true,
@@ -83,7 +83,7 @@
     }
 
     return {
-      status: "worked",
+      status: "worked_full",
       source: "default",
       holidayName: null,
       holidayShortLabel: "",
@@ -99,15 +99,19 @@
   }
 
   function isForcedOffStatus(status) {
-    return status === "closed" || status === "holiday" || status === "weekend";
+    return (
+      status === "company_closed" ||
+      status === "administrative_holiday" ||
+      status === "weekend"
+    );
   }
 
   function getRecoverableCapacity(status) {
-    if (status === "vacation") {
+    if (status === "not_worked") {
       return 1;
     }
 
-    if (status === "half_day") {
+    if (status === "worked_half") {
       return 0.5;
     }
 
@@ -119,11 +123,11 @@
   }
 
   function getReducibleCapacity(status) {
-    if (status === "worked") {
+    if (status === "worked_full") {
       return 1;
     }
 
-    if (status === "half_day") {
+    if (status === "worked_half") {
       return 0.5;
     }
 
@@ -131,11 +135,15 @@
   }
 
   function getNotWorkedEquivalent(status) {
-    if (status === "vacation" || status === "closed" || status === "available") {
+    if (
+      status === "not_worked" ||
+      status === "company_closed" ||
+      status === "available"
+    ) {
       return 1;
     }
 
-    if (status === "half_day") {
+    if (status === "worked_half") {
       return 0.5;
     }
 
@@ -214,8 +222,8 @@
     let recoverableDays = 0;
     let reducibleDays = 0;
     let forcedOffDays = 0;
-    let closedDays = 0;
-    let vacationDays = 0;
+    let companyClosedDays = 0;
+    let explicitlyNotWorkedDays = 0;
     let notWorkedDays = 0;
 
     for (let monthIndex = 0; monthIndex < 12; monthIndex += 1) {
@@ -241,12 +249,12 @@
           forcedOffDays += 1;
         }
 
-        if (record.status === "closed") {
-          closedDays += 1;
+        if (record.status === "company_closed") {
+          companyClosedDays += 1;
         }
 
-        if (record.status === "vacation") {
-          vacationDays += 1;
+        if (record.status === "not_worked") {
+          explicitlyNotWorkedDays += 1;
         }
 
         notWorkedDays += getNotWorkedEquivalent(record.status);
@@ -287,8 +295,8 @@
       workedEquivalentDays,
       totalLegalWorkdays,
       forcedOffDays,
-      closedDays,
-      vacationDays,
+      companyClosedDays,
+      explicitlyNotWorkedDays,
       notWorkedDays,
       overTarget,
       remainingTarget,

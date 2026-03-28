@@ -10,9 +10,11 @@
     ALLOWED_YEARS,
     DEFAULT_TARGET_DAYS,
     createDefaultState,
+    ensureYearState,
+    getYearState,
     loadState,
     removeStoredState,
-    resetState,
+    resetYearState,
     sanitizeState,
     saveState,
   } = global.Calculette.storage;
@@ -54,6 +56,7 @@
     remainingTargetValue: document.querySelector("#remaining-target-value"),
     statusValue: document.querySelector("#status-value"),
     paceCopy: document.querySelector("#pace-copy"),
+    calendarPanel: document.querySelector(".calendar-panel"),
     calendarCaption: document.querySelector("#calendar-caption"),
     calendarRoot: document.querySelector("#calendar-root"),
     statusCard: document.querySelector(".status-card"),
@@ -73,11 +76,16 @@
   };
 
   const dayActions = [
-    { type: "status", status: "worked", label: "Travaillé 1", shortcut: "t" },
-    { type: "status", status: "half_day", label: "Travaillé 0,5", shortcut: "d" },
-    { type: "status", status: "vacation", label: "Congé", shortcut: "c" },
-    { type: "status", status: "closed", label: "Fermé", shortcut: "f" },
-    { type: "status", status: "holiday", label: "Jour férié", shortcut: "j" },
+    { type: "status", status: "worked_full", label: "Travaillé 1", shortcut: "t" },
+    { type: "status", status: "worked_half", label: "Travaillé 0,5", shortcut: "d" },
+    { type: "status", status: "not_worked", label: "Congé", shortcut: "c" },
+    { type: "status", status: "company_closed", label: "Fermeture", shortcut: "f" },
+    {
+      type: "status",
+      status: "administrative_holiday",
+      label: "Jour férié",
+      shortcut: "j",
+    },
     { type: "reset", label: "Réinitialiser", shortcut: "r" },
   ];
 
@@ -121,7 +129,7 @@
   }
 
   function getShortcutHint() {
-    return "Raccourcis : T travaillé, D demi-journée, C congé, F fermé, J jour férié, R réinitialiser. Maj + clic sélectionne une plage. Échap annule la sélection.";
+    return "Raccourcis : T travaillé, D demi-journée, C congé, F fermeture, J jour férié, R réinitialiser. Maj + clic sélectionne une plage. Échap annule la sélection.";
   }
 
   function clearSelection() {
@@ -134,13 +142,38 @@
     return state;
   }
 
+  function getSelectedYearState() {
+    return ensureYearState(state, state.year);
+  }
+
+  function buildPlanningState() {
+    const selectedYearState = getYearState(state, state.year);
+
+    return {
+      year: state.year,
+      targetDays: selectedYearState.targetDays,
+      settings: state.settings,
+      dayOverrides: selectedYearState.dayOverrides,
+    };
+  }
+
+  function getTotalOverrideCount() {
+    return Object.values(state.years || {}).reduce(function sumOverrides(total, yearState) {
+      return total + Object.keys(yearState?.dayOverrides || {}).length;
+    }, 0);
+  }
+
   function setSessionFeedback(message, tone) {
     elements.sessionFeedback.textContent = message;
     elements.sessionFeedback.dataset.tone = tone || "neutral";
   }
 
   function isDayEditable(isoDate, holidaysByIso) {
-    const defaultRecord = getDefaultDayRecord(parseIsoDate(isoDate), state, holidaysByIso);
+    const defaultRecord = getDefaultDayRecord(
+      parseIsoDate(isoDate),
+      buildPlanningState(),
+      holidaysByIso,
+    );
     return defaultRecord.status !== "weekend";
   }
 
@@ -234,23 +267,26 @@
       return;
     }
 
+    const planningState = buildPlanningState();
+    const selectedYearState = getSelectedYearState();
+
     for (const isoDate of uiState.selectedDayIsos) {
       const selectedDate = parseIsoDate(isoDate);
       const defaultRecord = getDefaultDayRecord(
         selectedDate,
-        state,
+        planningState,
         snapshot.holidaysByIso,
       );
 
       if (action.type === "reset") {
-        delete state.dayOverrides[isoDate];
+        delete selectedYearState.dayOverrides[isoDate];
         continue;
       }
 
       if (action.status === defaultRecord.status) {
-        delete state.dayOverrides[isoDate];
+        delete selectedYearState.dayOverrides[isoDate];
       } else {
-        state.dayOverrides[isoDate] = action.status;
+        selectedYearState.dayOverrides[isoDate] = action.status;
       }
     }
 
@@ -308,7 +344,7 @@
     }
 
     event.preventDefault();
-    applyActionToSelection(matchedAction, buildYearSnapshot(state));
+    applyActionToSelection(matchedAction, buildYearSnapshot(buildPlanningState()));
   }
 
   function buildPaceCopy(snapshot) {
@@ -367,12 +403,16 @@
   }
 
   function syncInputs() {
+    const selectedYearState = getSelectedYearState();
+
     elements.yearInput.value = String(state.year);
-    elements.targetDaysInput.value = String(state.targetDays);
+    elements.targetDaysInput.value = String(selectedYearState.targetDays);
   }
 
   function renderSummary(snapshot) {
-    elements.targetDaysValue.textContent = formatNumber(state.targetDays);
+    const selectedYearState = getSelectedYearState();
+
+    elements.targetDaysValue.textContent = formatNumber(selectedYearState.targetDays);
     elements.workedTotalValue.textContent = formatNumber(
       snapshot.workedEquivalentDays,
     );
@@ -396,11 +436,11 @@
     elements.statusValue.textContent = snapshot.statusLabel;
     elements.statusCard.dataset.tone = snapshot.statusTone;
     elements.paceCopy.textContent = buildPaceCopy(snapshot);
-    elements.calendarCaption.textContent = `${snapshot.totalLegalWorkdays} jours ouvrables théoriques, ${snapshot.holidaysByIso.size} jours fériés générés, ${snapshot.vacationDays} congés saisis.`;
+    elements.calendarCaption.textContent = `${snapshot.totalLegalWorkdays} jours ouvrables théoriques, ${snapshot.holidaysByIso.size} jours fériés générés, ${snapshot.explicitlyNotWorkedDays} congés saisis et ${snapshot.companyClosedDays} fermetures.`;
   }
 
   function renderSessionInfo() {
-    const overrideCount = Object.keys(state.dayOverrides).length;
+    const overrideCount = getTotalOverrideCount();
     elements.sessionUpdatedValue.textContent = formatDateTime(
       state.meta?.updatedAt,
     );
@@ -484,7 +524,7 @@
   }
 
   function handleYearReset() {
-    state = resetState(state.year);
+    state = resetYearState(state, state.year);
     clearSelection();
     render();
     setSessionFeedback(
@@ -561,7 +601,8 @@
   }
 
   function render() {
-    const snapshot = buildYearSnapshot(state);
+    const planningState = buildPlanningState();
+    const snapshot = buildYearSnapshot(planningState);
     const editableDayIsoSet = getEditableDayIsoSet(snapshot);
 
     sanitizeSelection(editableDayIsoSet);
@@ -578,13 +619,22 @@
     });
   }
 
-  function updateStateFromInputs() {
+  function updateStateFromInputs(event) {
     const requestedYear = Number(elements.yearInput.value);
-    state.year = ALLOWED_YEARS.includes(requestedYear)
+    const nextYear = ALLOWED_YEARS.includes(requestedYear)
       ? requestedYear
       : createDefaultState().year;
-    state.targetDays = readTargetDaysInput();
+    const yearChanged = state.year !== nextYear;
+
+    state.year = nextYear;
+    const selectedYearState = getSelectedYearState();
+
+    if (event?.target === elements.targetDaysInput) {
+      selectedYearState.targetDays = readTargetDaysInput();
+    }
+
     if (
+      yearChanged &&
       uiState.anchorDayIso &&
       !uiState.anchorDayIso.startsWith(`${state.year}-`)
     ) {
@@ -594,7 +644,27 @@
     render();
   }
 
-  elements.settingsForm.addEventListener("input", updateStateFromInputs);
+  function handleClickOutsideCalendar(event) {
+    if (!uiState.selectedDayIsos.length) {
+      return;
+    }
+
+    const clickPath =
+      typeof event.composedPath === "function" ? event.composedPath() : null;
+
+    if (
+      elements.calendarPanel &&
+      ((clickPath && clickPath.includes(elements.calendarPanel)) ||
+        (event.target instanceof Node &&
+          elements.calendarPanel.contains(event.target)))
+    ) {
+      return;
+    }
+
+    clearSelection();
+    render();
+  }
+
   elements.settingsForm.addEventListener("change", updateStateFromInputs);
   elements.exportSessionButton.addEventListener("click", downloadSessionExport);
   elements.importSessionButton.addEventListener("click", function openImportDialog() {
@@ -603,6 +673,7 @@
   elements.sessionImportInput.addEventListener("change", handleSessionImport);
   elements.resetYearButton.addEventListener("click", handleYearReset);
   elements.clearSessionButton.addEventListener("click", handleSessionClear);
+  document.addEventListener("click", handleClickOutsideCalendar);
   document.addEventListener("keydown", handleKeyboardShortcuts);
 
   render();

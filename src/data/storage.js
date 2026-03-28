@@ -1,22 +1,27 @@
 (function attachStorage(global) {
   const STORAGE_KEY = "calculette-jours-homme/state";
   const DEFAULT_TARGET_DAYS = 216;
-  const ALLOWED_YEARS = [2025, 2026, 2027];
-  const SESSION_SCHEMA_VERSION = 1;
+  const ALLOWED_YEARS = [2025, 2026, 2027, 2028];
+  const SESSION_SCHEMA_VERSION = 2;
   const VALID_OVERRIDE_STATUSES = new Set([
-    "worked",
-    "half_day",
-    "vacation",
-    "closed",
-    "holiday",
+    "worked_full",
+    "worked_half",
+    "not_worked",
+    "company_closed",
+    "administrative_holiday",
   ]);
-  const LEGACY_STATUS_MAP = {
-    worked_full: "worked",
-    worked_half: "half_day",
-    not_worked: "vacation",
-    company_closed: "closed",
-    mandated_day_off: "closed",
-    administrative_holiday: "holiday",
+  const STATUS_ALIASES = {
+    worked_full: "worked_full",
+    worked: "worked_full",
+    worked_half: "worked_half",
+    half_day: "worked_half",
+    not_worked: "not_worked",
+    vacation: "not_worked",
+    company_closed: "company_closed",
+    closed: "company_closed",
+    administrative_holiday: "administrative_holiday",
+    holiday: "administrative_holiday",
+    mandated_day_off: "company_closed",
     available: null,
     weekend: null,
   };
@@ -87,11 +92,18 @@
       return status;
     }
 
-    if (Object.prototype.hasOwnProperty.call(LEGACY_STATUS_MAP, status)) {
-      return LEGACY_STATUS_MAP[status];
+    if (Object.prototype.hasOwnProperty.call(STATUS_ALIASES, status)) {
+      return STATUS_ALIASES[status];
     }
 
     return null;
+  }
+
+  function createDefaultYearState() {
+    return {
+      targetDays: DEFAULT_TARGET_DAYS,
+      dayOverrides: {},
+    };
   }
 
   function createDefaultState(year) {
@@ -100,14 +112,15 @@
 
     return {
       year: safeYear,
-      targetDays: DEFAULT_TARGET_DAYS,
       meta: createSessionMeta(),
       settings: {
         countryHolidayPreset: "FR",
         weekendsAreBlocked: true,
         estimationMode: "workable_days_only",
       },
-      dayOverrides: {},
+      years: {
+        [safeYear]: createDefaultYearState(),
+      },
     };
   }
 
@@ -149,20 +162,108 @@
     return sanitizedOverrides;
   }
 
+  function sanitizeYearState(candidateYearState) {
+    const fallbackYearState = createDefaultYearState();
+
+    return {
+      targetDays: sanitizeNumber(
+        candidateYearState?.targetDays,
+        fallbackYearState.targetDays,
+        0,
+        366,
+      ),
+      dayOverrides: sanitizeDayOverrides(candidateYearState?.dayOverrides),
+    };
+  }
+
+  function getIsoYear(isoDate) {
+    const parsedYear = Number(String(isoDate).slice(0, 4));
+    return ALLOWED_YEARS.includes(parsedYear) ? parsedYear : null;
+  }
+
+  function buildLegacyYears(candidateState) {
+    const legacyYears = {};
+    const selectedYear = sanitizeYear(candidateState?.year, getDefaultYear());
+    const selectedYearKey = String(selectedYear);
+    legacyYears[selectedYearKey] = createDefaultYearState();
+    legacyYears[selectedYearKey].targetDays = sanitizeNumber(
+      candidateState?.targetDays,
+      DEFAULT_TARGET_DAYS,
+      0,
+      366,
+    );
+
+    const sanitizedOverrides = sanitizeDayOverrides(candidateState?.dayOverrides);
+    for (const [isoDate, status] of Object.entries(sanitizedOverrides)) {
+      const overrideYear = getIsoYear(isoDate);
+      if (!overrideYear) {
+        continue;
+      }
+
+      const overrideYearKey = String(overrideYear);
+      if (!legacyYears[overrideYearKey]) {
+        legacyYears[overrideYearKey] = createDefaultYearState();
+      }
+
+      legacyYears[overrideYearKey].dayOverrides[isoDate] = status;
+    }
+
+    return legacyYears;
+  }
+
+  function sanitizeYears(candidateState, selectedYear) {
+    const sanitizedYears = {};
+    const selectedYearKey = String(selectedYear);
+    const candidateYears =
+      candidateState?.years &&
+      typeof candidateState.years === "object" &&
+      !Array.isArray(candidateState.years)
+        ? candidateState.years
+        : null;
+
+    if (candidateYears) {
+      for (const allowedYear of ALLOWED_YEARS) {
+        const yearKey = String(allowedYear);
+        const candidateYearState = candidateYears[yearKey];
+        if (!candidateYearState) {
+          continue;
+        }
+
+        sanitizedYears[yearKey] = sanitizeYearState(candidateYearState);
+      }
+    }
+
+    const legacyYears = buildLegacyYears(candidateState);
+    for (const [yearKey, legacyYearState] of Object.entries(legacyYears)) {
+      if (!sanitizedYears[yearKey]) {
+        sanitizedYears[yearKey] = legacyYearState;
+        continue;
+      }
+
+      sanitizedYears[yearKey].dayOverrides = Object.assign(
+        {},
+        legacyYearState.dayOverrides,
+        sanitizedYears[yearKey].dayOverrides,
+      );
+    }
+
+    if (!sanitizedYears[selectedYearKey]) {
+      sanitizedYears[selectedYearKey] = createDefaultYearState();
+    }
+
+    return sanitizedYears;
+  }
+
   function sanitizeState(candidateState) {
     const fallbackState = createDefaultState();
     if (!candidateState || typeof candidateState !== "object") {
       return fallbackState;
     }
 
+    const selectedYear = sanitizeYear(candidateState.year, fallbackState.year);
+
     return {
-      year: sanitizeYear(candidateState.year, fallbackState.year),
-      targetDays: sanitizeNumber(
-        candidateState.targetDays,
-        fallbackState.targetDays,
-        0,
-        366,
-      ),
+      year: selectedYear,
       meta: createSessionMeta(candidateState.meta),
       settings: {
         countryHolidayPreset: "FR",
@@ -170,7 +271,7 @@
           candidateState.settings?.weekendsAreBlocked !== false,
         estimationMode: "workable_days_only",
       },
-      dayOverrides: sanitizeDayOverrides(candidateState.dayOverrides),
+      years: sanitizeYears(candidateState, selectedYear),
     };
   }
 
@@ -200,8 +301,37 @@
     return sanitizedState;
   }
 
-  function resetState(year) {
-    return saveState(createDefaultState(year));
+  function ensureYearState(state, year) {
+    const safeYear = sanitizeYear(year, getDefaultYear());
+    const yearKey = String(safeYear);
+
+    if (
+      !state.years ||
+      typeof state.years !== "object" ||
+      Array.isArray(state.years)
+    ) {
+      state.years = {};
+    }
+
+    if (!state.years[yearKey]) {
+      state.years[yearKey] = createDefaultYearState();
+      return state.years[yearKey];
+    }
+
+    state.years[yearKey] = sanitizeYearState(state.years[yearKey]);
+    return state.years[yearKey];
+  }
+
+  function getYearState(state, year) {
+    return ensureYearState(state, year);
+  }
+
+  function resetYearState(state, year) {
+    const sanitizedState = sanitizeState(state);
+    const safeYear = sanitizeYear(year, sanitizedState.year);
+    sanitizedState.years[String(safeYear)] = createDefaultYearState();
+    sanitizedState.year = safeYear;
+    return saveState(sanitizedState);
   }
 
   function removeStoredState() {
@@ -220,10 +350,13 @@
     STORAGE_KEY,
     VALID_OVERRIDE_STATUSES,
     createDefaultState,
+    createDefaultYearState,
+    ensureYearState,
     getDefaultYear,
+    getYearState,
     loadState,
     removeStoredState,
-    resetState,
+    resetYearState,
     sanitizeState,
     saveState,
   };

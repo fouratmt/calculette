@@ -8,10 +8,10 @@ Build a lightweight static browser app for freelance consultants to pilot their 
 
 Current scope:
 
-- selectable years: `2025`, `2026`, `2027`
+- selectable years: `2025`, `2026`, `2027`, `2028`
 - configurable yearly target, such as `216` days
 - French public holidays generated locally
-- normal legal weekdays prefilled as `worked`
+- normal legal weekdays prefilled as `worked_full`
 - a calendar used to subtract or adjust days with explicit overrides
 - direct execution from `index.html` without a build step
 - local backup and restore through JSON export and import
@@ -39,11 +39,11 @@ The app should let the user see, at a glance, whether the current yearly plan hi
 
 The app currently starts from a filled planning baseline rather than an empty one:
 
-- a normal legal weekday defaults to `worked`
+- a normal legal weekday defaults to `worked_full`
 - French holidays are generated automatically for the selected year
 - weekends remain non-working and are locked in the UI
 - when a date is both a holiday and a weekend, the holiday label takes visual precedence
-- the calendar is mainly used to turn default worked days into vacations, closures, holidays, or half-days
+- the calendar is mainly used to turn default worked days into non-worked days, closures, mandated days off, holidays, or half-days
 
 ### Editable Day Statuses
 
@@ -51,25 +51,25 @@ The user-facing editor supports the following statuses:
 
 | Status Key | Label | Counted Value | Notes |
 | --- | --- | --- | --- |
-| `worked` | `Travaillé` | `1` | Default for normal legal weekdays and also a valid override |
-| `half_day` | `Travaillé 0,5` | `0.5` | Partial workday |
-| `vacation` | `Congé` | `0` | Non-worked but still recoverable in future-capacity calculations |
-| `closed` | `Fermé` | `0` | Blocked day |
-| `holiday` | `Jour férié` | `0` | Blocked day, either generated or manually overridden |
+| `worked_full` | `Travaillé` | `1` | Default for normal legal weekdays and also a valid override |
+| `worked_half` | `Travaillé 0,5` | `0.5` | Partial workday |
+| `not_worked` | `Congé` | `0` | Non-worked but still recoverable in future-capacity calculations |
+| `company_closed` | `Fermeture` | `0` | Blocked day |
+| `administrative_holiday` | `Jour férié` | `0` | Blocked day, either generated or manually overridden |
 | `weekend` | `Week-end` | `0` | Derived only, not stored as an override |
 
 There is no user-facing `available` state in the current UI.
 
 ### What Counts Toward the Yearly Target
 
-- `worked = 1`
-- `half_day = 0.5`
+- `worked_full = 1`
+- `worked_half = 0.5`
 
 ### What Does Not Count
 
-- `vacation = 0`
-- `closed = 0`
-- `holiday = 0`
+- `not_worked = 0`
+- `company_closed = 0`
+- `administrative_holiday = 0`
 - `weekend = 0`
 
 ### Reset to Default
@@ -79,7 +79,7 @@ There is no user-facing `available` state in the current UI.
 1. explicit override removed
 2. generated French holiday if one exists
 3. weekend rule
-4. otherwise `worked`
+4. otherwise `worked_full`
 
 ### Effective Status Resolution
 
@@ -88,7 +88,7 @@ Every date currently resolves in this order:
 1. explicit user override
 2. generated French holiday
 3. weekend
-4. default worked day
+4. default `worked_full` day
 
 That resolver drives rendering, calculations, and the day editor state.
 
@@ -151,7 +151,7 @@ Current calendar behavior:
 
 - Monday-first month grids
 - monthly legal-workday and worked-total summaries
-- distinct visual states for worked, half-day, vacation, closed, holiday, and weekend
+- distinct visual states for worked, half-day, non-worked, company-closed, mandated-day-off, holiday, and weekend
 - selected-day highlighting
 - future default-worked days visually marked as planned
 - weekend tiles visible but not editable
@@ -164,13 +164,14 @@ The current interaction model is:
 - shift-click to select an editable range, weekends excluded
 - use the action panel to apply a status immediately
 - use keyboard shortcuts for quick entry
+- click outside the calendar panel to clear the current selection
 
 Current actions:
 
 - `Travaillé`
 - `Travaillé 0,5`
 - `Congé`
-- `Fermé`
+- `Fermeture`
 - `Jour férié`
 - `Réinitialiser`
 
@@ -178,8 +179,8 @@ Current shortcuts:
 
 - `T` for worked
 - `D` for half-day
-- `C` for vacation
-- `F` for closed
+- `C` for congé
+- `F` for company closed
 - `J` for holiday
 - `R` for reset
 - `Escape` to clear the current selection
@@ -203,22 +204,20 @@ The app also includes a local session panel with:
 The stored state contains:
 
 - selected year
-- yearly target
 - settings
 - session metadata
-- `dayOverrides`
+- per-year planning buckets under `years`
 
-Only explicit overrides are persisted for individual days.
+Only explicit overrides are persisted for individual days inside each yearly bucket.
 
 ### Example Structure
 
 ```json
 {
   "year": 2026,
-  "targetDays": 216,
   "meta": {
     "sessionId": "session-abc123",
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "createdAt": "2026-03-28T09:00:00.000Z",
     "updatedAt": "2026-03-28T09:15:00.000Z"
   },
@@ -227,21 +226,30 @@ Only explicit overrides are persisted for individual days.
     "weekendsAreBlocked": true,
     "estimationMode": "workable_days_only"
   },
-  "dayOverrides": {
-    "2026-01-06": "half_day",
-    "2026-01-07": "vacation",
-    "2026-05-01": "worked",
-    "2026-08-14": "closed"
+  "years": {
+    "2026": {
+      "targetDays": 216,
+      "dayOverrides": {
+        "2026-01-06": "worked_half",
+        "2026-01-07": "not_worked",
+        "2026-05-01": "worked_full",
+        "2026-08-14": "company_closed"
+      }
+    },
+    "2027": {
+      "targetDays": 216,
+      "dayOverrides": {}
+    }
   }
 }
 ```
 
-Legacy override values are migrated on load to the current simplified statuses.
+Legacy override values are migrated on load to the canonical status keys, older flat yearly state is grouped into `years[year]`, and legacy `mandated_day_off` values are folded into `company_closed`.
 
 ## 7. Open Items
 
 The main follow-up items still to decide or implement are:
 
 1. Revisit the status heuristic if labels should depend on recent actual pace instead of fixed thresholds only.
-2. Decide whether year support should remain fixed to `2025`-`2027` or become dynamic.
-3. Reassess later whether the simplified status model is enough, or whether more detailed non-working categories need to return.
+2. Decide whether year support should remain fixed to `2025`-`2028` or become dynamic.
+3. Improve bulk-editing speed beyond the current selection panel and single-key shortcuts.

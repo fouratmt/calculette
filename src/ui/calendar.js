@@ -95,7 +95,7 @@
           dayTile.classList.add("is-selected");
         }
 
-        if (record.status === "worked" && date > planningToday) {
+        if (record.status === "worked_full" && date > planningToday) {
           dayTile.classList.add("is-planned");
           dayTile.title = `${record.holidayName || meta.label} prévu`;
         }
