@@ -38,12 +38,23 @@
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const mobileViewportQuery =
+    typeof global.matchMedia === "function"
+      ? global.matchMedia("(max-width: 760px)")
+      : null;
 
   let state = loadState();
   const uiState = {
     anchorDayIso: null,
     selectedDayIsos: [],
+    mobilePopoverAnchorIso: null,
+    mobileGesture: {
+      active: false,
+      lastTouchedIso: null,
+      suppressClickUntil: 0,
+    },
   };
+  let lastKnownMobileMode = isMobileMode();
 
   const elements = {
     settingsForm: document.querySelector("#settings-form"),
@@ -132,9 +143,20 @@
     return "Raccourcis : T travaillé, D demi-journée, C congé, F fermeture, J jour férié, R réinitialiser. Maj + clic sélectionne une plage. Échap annule la sélection.";
   }
 
+  function isMobileMode() {
+    if (mobileViewportQuery) {
+      return mobileViewportQuery.matches;
+    }
+
+    return typeof global.innerWidth === "number" && global.innerWidth <= 760;
+  }
+
   function clearSelection() {
     uiState.anchorDayIso = null;
     uiState.selectedDayIsos = [];
+    uiState.mobilePopoverAnchorIso = null;
+    uiState.mobileGesture.active = false;
+    uiState.mobileGesture.lastTouchedIso = null;
   }
 
   function persistState() {
@@ -196,11 +218,20 @@
 
     if (!uiState.selectedDayIsos.length) {
       uiState.anchorDayIso = null;
+      uiState.mobilePopoverAnchorIso = null;
       return;
     }
 
     if (!uiState.anchorDayIso || !editableDayIsoSet.has(uiState.anchorDayIso)) {
       uiState.anchorDayIso = uiState.selectedDayIsos[0];
+    }
+
+    if (
+      !uiState.mobilePopoverAnchorIso ||
+      !editableDayIsoSet.has(uiState.mobilePopoverAnchorIso)
+    ) {
+      uiState.mobilePopoverAnchorIso =
+        uiState.selectedDayIsos[uiState.selectedDayIsos.length - 1];
     }
   }
 
@@ -237,6 +268,7 @@
       isoDate,
       snapshot.holidaysByIso,
     );
+    uiState.mobilePopoverAnchorIso = isoDate;
   }
 
   function selectSingleDay(isoDate, snapshot) {
@@ -246,6 +278,7 @@
 
     uiState.anchorDayIso = isoDate;
     uiState.selectedDayIsos = [isoDate];
+    uiState.mobilePopoverAnchorIso = isoDate;
   }
 
   function getUniformSelectionStatus(snapshot) {
@@ -294,18 +327,198 @@
     render();
   }
 
+  function getSelectionDetails(snapshot) {
+    if (!uiState.selectedDayIsos.length) {
+      return {
+        title: "Cliquez sur un jour",
+        hint:
+          `Choisissez ensuite s'il est travaillé, en congé, fermé, férié ou saisi à 0,5. ${getShortcutHint()}`,
+        statusLabel: null,
+        uniformSelectionStatus: null,
+      };
+    }
+
+    const uniformSelectionStatus = getUniformSelectionStatus(snapshot);
+    const currentMeta = uniformSelectionStatus
+      ? STATUS_META[uniformSelectionStatus] || STATUS_META.available
+      : null;
+    const statusLabel = currentMeta ? currentMeta.label : "mixte";
+
+    if (uiState.selectedDayIsos.length === 1) {
+      const selectedDate = parseIsoDate(uiState.selectedDayIsos[0]);
+      return {
+        title: dateFormatter.format(selectedDate),
+        hint: `Statut actuel : ${statusLabel}. ${getShortcutHint()}`,
+        statusLabel,
+        uniformSelectionStatus,
+      };
+    }
+
+    const rangeStartIso = uiState.selectedDayIsos[0];
+    const rangeEndIso = uiState.selectedDayIsos[uiState.selectedDayIsos.length - 1];
+
+    return {
+      title: `${uiState.selectedDayIsos.length} jours sélectionnés`,
+      hint: `Du ${rangeDateFormatter.format(
+        parseIsoDate(rangeStartIso),
+      )} au ${rangeDateFormatter.format(
+        parseIsoDate(rangeEndIso),
+      )}, week-ends exclus. Statut actuel : ${statusLabel}. ${getShortcutHint()}`,
+      statusLabel,
+      uniformSelectionStatus,
+    };
+  }
+
+  function createDayActionButton(action, snapshot, uniformSelectionStatus, options) {
+    const settings = options || {};
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "day-action-button";
+    button.textContent =
+      settings.includeShortcut === false
+        ? action.label
+        : `${action.label} (${action.shortcut.toUpperCase()})`;
+
+    for (const className of settings.classNames || []) {
+      button.classList.add(className);
+    }
+
+    if (action.type === "status") {
+      button.dataset.status = action.status;
+      if (uniformSelectionStatus === action.status) {
+        button.classList.add("is-active");
+      }
+
+      button.addEventListener("click", function applyStatus() {
+        applyActionToSelection(action, snapshot);
+      });
+    } else {
+      button.classList.add("is-secondary");
+      button.addEventListener("click", function resetStatus() {
+        applyActionToSelection(action, snapshot);
+      });
+    }
+
+    return button;
+  }
+
   function handleDaySelection(selectionEvent, snapshot) {
     if (!selectionEvent || !selectionEvent.isoDate) {
       return;
     }
 
-    if (selectionEvent.shiftKey && uiState.anchorDayIso) {
+    if (
+      selectionEvent.inputType === "click" &&
+      isMobileMode() &&
+      Date.now() < uiState.mobileGesture.suppressClickUntil
+    ) {
+      return;
+    }
+
+    if (selectionEvent.extendSelection && uiState.anchorDayIso) {
       selectDayRange(selectionEvent.isoDate, snapshot);
     } else {
       selectSingleDay(selectionEvent.isoDate, snapshot);
     }
 
     render();
+  }
+
+  function getInteractiveDayTile(target) {
+    if (!(target instanceof Element)) {
+      return null;
+    }
+
+    const dayTile = target.closest(".day-tile[data-iso-date]");
+    if (
+      !dayTile ||
+      dayTile.disabled ||
+      dayTile.classList.contains("is-locked") ||
+      typeof dayTile.dataset.isoDate !== "string"
+    ) {
+      return null;
+    }
+
+    return dayTile;
+  }
+
+  function getInteractiveDayTileFromTouch(touch) {
+    if (!touch) {
+      return null;
+    }
+
+    return getInteractiveDayTile(
+      document.elementFromPoint(touch.clientX, touch.clientY),
+    );
+  }
+
+  function handleCalendarTouchStart(event) {
+    if (!isMobileMode()) {
+      return;
+    }
+
+    const touch = event.touches && event.touches[0];
+    const dayTile =
+      getInteractiveDayTile(event.target) || getInteractiveDayTileFromTouch(touch);
+    if (!dayTile) {
+      return;
+    }
+
+    event.preventDefault();
+    uiState.mobileGesture.active = true;
+    uiState.mobileGesture.lastTouchedIso = dayTile.dataset.isoDate;
+    handleDaySelection(
+      {
+        isoDate: dayTile.dataset.isoDate,
+        extendSelection: false,
+        inputType: "touch",
+      },
+      buildYearSnapshot(buildPlanningState()),
+    );
+  }
+
+  function handleCalendarTouchMove(event) {
+    if (!isMobileMode() || !uiState.mobileGesture.active) {
+      return;
+    }
+
+    const touch = event.touches && event.touches[0];
+    if (!touch) {
+      return;
+    }
+
+    event.preventDefault();
+    const dayTile = getInteractiveDayTileFromTouch(touch);
+    if (
+      !dayTile ||
+      dayTile.dataset.isoDate === uiState.mobileGesture.lastTouchedIso
+    ) {
+      return;
+    }
+
+    uiState.mobileGesture.lastTouchedIso = dayTile.dataset.isoDate;
+    handleDaySelection(
+      {
+        isoDate: dayTile.dataset.isoDate,
+        extendSelection: true,
+        inputType: "touch",
+      },
+      buildYearSnapshot(buildPlanningState()),
+    );
+  }
+
+  function finishCalendarTouchGesture() {
+    if (!uiState.mobileGesture.active) {
+      return;
+    }
+
+    uiState.mobileGesture.active = false;
+    uiState.mobileGesture.lastTouchedIso = null;
+    uiState.mobileGesture.suppressClickUntil = Date.now() + 400;
+
+    if (uiState.selectedDayIsos.length) {
+      render();
+    }
   }
 
   function handleKeyboardShortcuts(event) {
@@ -543,61 +756,118 @@
   function renderDayEditor(snapshot) {
     elements.dayActionList.replaceChildren();
 
+    const selectionDetails = getSelectionDetails(snapshot);
+
     if (!uiState.selectedDayIsos.length) {
       elements.dayEditor.dataset.empty = "true";
-      elements.selectedDayTitle.textContent = "Cliquez sur un jour";
-      elements.selectedDayHint.textContent =
-        `Choisissez ensuite s'il est travaillé, en congé, fermé, férié ou saisi à 0,5. ${getShortcutHint()}`;
+      elements.selectedDayTitle.textContent = selectionDetails.title;
+      elements.selectedDayHint.textContent = selectionDetails.hint;
       return;
     }
 
-    const uniformSelectionStatus = getUniformSelectionStatus(snapshot);
-    const currentMeta = uniformSelectionStatus
-      ? STATUS_META[uniformSelectionStatus] || STATUS_META.available
-      : null;
-
     elements.dayEditor.dataset.empty = "false";
-    if (uiState.selectedDayIsos.length === 1) {
-      const selectedDate = parseIsoDate(uiState.selectedDayIsos[0]);
-      elements.selectedDayTitle.textContent = dateFormatter.format(selectedDate);
-      elements.selectedDayHint.textContent = `Statut actuel : ${currentMeta.label}. ${getShortcutHint()}`;
-    } else {
-      const rangeStartIso = uiState.selectedDayIsos[0];
-      const rangeEndIso = uiState.selectedDayIsos[uiState.selectedDayIsos.length - 1];
-      const selectionStatusLabel = currentMeta ? currentMeta.label : "mixte";
-
-      elements.selectedDayTitle.textContent = `${uiState.selectedDayIsos.length} jours sélectionnés`;
-      elements.selectedDayHint.textContent = `Du ${rangeDateFormatter.format(
-        parseIsoDate(rangeStartIso),
-      )} au ${rangeDateFormatter.format(
-        parseIsoDate(rangeEndIso),
-      )}, week-ends exclus. Statut actuel : ${selectionStatusLabel}. ${getShortcutHint()}`;
-    }
+    elements.selectedDayTitle.textContent = selectionDetails.title;
+    elements.selectedDayHint.textContent = selectionDetails.hint;
 
     for (const action of dayActions) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "day-action-button";
-      button.textContent = `${action.label} (${action.shortcut.toUpperCase()})`;
-
-      if (action.type === "status") {
-        button.dataset.status = action.status;
-        if (uniformSelectionStatus === action.status) {
-          button.classList.add("is-active");
-        }
-
-        button.addEventListener("click", function applyStatus() {
-          applyActionToSelection(action, snapshot);
-        });
-      } else {
-        button.classList.add("is-secondary");
-        button.addEventListener("click", function resetStatus() {
-          applyActionToSelection(action, snapshot);
-        });
-      }
-
-      elements.dayActionList.append(button);
+      elements.dayActionList.append(
+        createDayActionButton(
+          action,
+          snapshot,
+          selectionDetails.uniformSelectionStatus,
+        ),
+      );
     }
+  }
+
+  function renderMobileDayPopover(snapshot) {
+    if (
+      !isMobileMode() ||
+      !uiState.selectedDayIsos.length ||
+      uiState.mobileGesture.active
+    ) {
+      return;
+    }
+
+    const anchorIso =
+      uiState.mobilePopoverAnchorIso &&
+      uiState.selectedDayIsos.includes(uiState.mobilePopoverAnchorIso)
+        ? uiState.mobilePopoverAnchorIso
+        : uiState.selectedDayIsos[uiState.selectedDayIsos.length - 1];
+    const anchorTile = elements.calendarRoot.querySelector(
+      `.day-tile[data-iso-date="${anchorIso}"]`,
+    );
+    if (!anchorTile) {
+      return;
+    }
+
+    const selectionDetails = getSelectionDetails(snapshot);
+    const popover = document.createElement("div");
+    popover.className = "mobile-day-popover";
+    popover.dataset.placement = "above";
+
+    const heading = document.createElement("div");
+    heading.className = "mobile-day-popover-heading";
+
+    const title = document.createElement("strong");
+    title.className = "mobile-day-popover-title";
+    title.textContent = selectionDetails.title;
+
+    const summary = document.createElement("span");
+    summary.className = "mobile-day-popover-summary";
+    summary.textContent = selectionDetails.statusLabel
+      ? `Statut actuel : ${selectionDetails.statusLabel}`
+      : "Choisissez un statut";
+
+    heading.append(title, summary);
+
+    const actionGrid = document.createElement("div");
+    actionGrid.className = "mobile-day-popover-actions";
+
+    for (const action of dayActions) {
+      actionGrid.append(
+        createDayActionButton(action, snapshot, selectionDetails.uniformSelectionStatus, {
+          classNames: ["is-compact"],
+          includeShortcut: false,
+        }),
+      );
+    }
+
+    popover.append(heading, actionGrid);
+    elements.calendarRoot.append(popover);
+
+    const rootRect = elements.calendarRoot.getBoundingClientRect();
+    const anchorRect = anchorTile.getBoundingClientRect();
+    const popoverRect = popover.getBoundingClientRect();
+    const horizontalPadding = 8;
+    const verticalOffset = 12;
+    const preferredTop =
+      anchorRect.top - rootRect.top - popoverRect.height - verticalOffset;
+    const fallbackTop = anchorRect.bottom - rootRect.top + verticalOffset;
+    const maxTop = Math.max(
+      verticalOffset,
+      elements.calendarRoot.scrollHeight - popoverRect.height - verticalOffset,
+    );
+    const left = clamp(
+      anchorRect.left -
+        rootRect.left +
+        anchorRect.width / 2 -
+        popoverRect.width / 2,
+      horizontalPadding,
+      Math.max(
+        horizontalPadding,
+        rootRect.width - popoverRect.width - horizontalPadding,
+      ),
+    );
+    const placeAbove = preferredTop >= verticalOffset;
+
+    popover.style.left = `${left}px`;
+    popover.style.top = `${clamp(
+      placeAbove ? preferredTop : fallbackTop,
+      verticalOffset,
+      maxTop,
+    )}px`;
+    popover.dataset.placement = placeAbove ? "above" : "below";
   }
 
   function render() {
@@ -617,6 +887,7 @@
         handleDaySelection(selectionEvent, snapshot);
       },
     });
+    renderMobileDayPopover(snapshot);
   }
 
   function updateStateFromInputs(event) {
@@ -665,6 +936,16 @@
     render();
   }
 
+  function handleViewportChange() {
+    const nextMobileMode = isMobileMode();
+    const modeChanged = nextMobileMode !== lastKnownMobileMode;
+    lastKnownMobileMode = nextMobileMode;
+
+    if (modeChanged || (nextMobileMode && uiState.selectedDayIsos.length)) {
+      render();
+    }
+  }
+
   elements.settingsForm.addEventListener("change", updateStateFromInputs);
   elements.exportSessionButton.addEventListener("click", downloadSessionExport);
   elements.importSessionButton.addEventListener("click", function openImportDialog() {
@@ -673,8 +954,26 @@
   elements.sessionImportInput.addEventListener("change", handleSessionImport);
   elements.resetYearButton.addEventListener("click", handleYearReset);
   elements.clearSessionButton.addEventListener("click", handleSessionClear);
+  elements.calendarRoot.addEventListener("touchstart", handleCalendarTouchStart, {
+    passive: false,
+  });
+  elements.calendarRoot.addEventListener("touchmove", handleCalendarTouchMove, {
+    passive: false,
+  });
+  elements.calendarRoot.addEventListener("touchend", finishCalendarTouchGesture);
+  elements.calendarRoot.addEventListener(
+    "touchcancel",
+    finishCalendarTouchGesture,
+  );
   document.addEventListener("click", handleClickOutsideCalendar);
   document.addEventListener("keydown", handleKeyboardShortcuts);
+  global.addEventListener("resize", handleViewportChange);
+
+  if (mobileViewportQuery && typeof mobileViewportQuery.addEventListener === "function") {
+    mobileViewportQuery.addEventListener("change", handleViewportChange);
+  } else if (mobileViewportQuery && typeof mobileViewportQuery.addListener === "function") {
+    mobileViewportQuery.addListener(handleViewportChange);
+  }
 
   render();
 })(window);

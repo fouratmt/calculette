@@ -120,7 +120,8 @@
           dayTile.addEventListener("click", function handleClick(event) {
             onDaySelect({
               isoDate,
-              shiftKey: event.shiftKey,
+              extendSelection: event.shiftKey,
+              inputType: "click",
             });
           });
         }

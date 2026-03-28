@@ -7,7 +7,7 @@ This file tracks the current implementation status against the product plan in `
 - The static app shell, yearly summary, full-year calendar, and local session panel are implemented.
 - Normal legal weekdays default to `worked_full`, weekends are locked, and generated French holidays take visual precedence when they overlap weekends.
 - Per-year data is isolated in storage, so changing or resetting one year no longer mutates another year's overrides.
-- Single-day editing, shift-click range selection, and keyboard shortcuts are implemented.
+- Single-day editing, desktop shift-click range selection, mobile touch-range selection, and keyboard shortcuts are implemented.
 - JSON export/import, current-year reset, and full local-session clearing are implemented.
 - The main functional gap is heuristic depth: status labels still rely on fixed thresholds rather than recent-pace comparison.
 
@@ -34,9 +34,11 @@ This file tracks the current implementation status against the product plan in `
 | Visual distinction between statuses | Implemented | Worked, half-day, non-worked, company-closed, mandated-day-off, holiday, and weekend have separate styles. |
 | Single-day editing | Implemented | Clicking an editable day opens immediate status actions for that selection. |
 | Range editing | Implemented | Shift-click selects an editable date range, skipping weekends. |
+| Mobile drag range editing | Implemented | On narrow screens, tapping a day and dragging over others extends the current editable range. |
 | Outside-click selection reset | Implemented | Clicking outside the calendar panel clears the current selection. |
 | Keyboard shortcuts | Implemented | `T`, `D`, `C`, `F`, `J`, `R`, and `Escape` are wired globally. |
 | Reset to default | Implemented | Reset removes the override and falls back to the derived default for the date. |
+| Mobile inline action popover | Implemented | On narrow screens, selected days can be edited from a popover anchored in the calendar instead of scrolling back to the top panel. |
 | Local JSON backup and restore | Implemented | The session panel exports and imports JSON state files. |
 | Current-year reset | Implemented | The session panel can rebuild the selected year from defaults. |
 | Full local-session clear | Implemented | Stored local state can be removed and recreated from scratch. |
@@ -47,4 +49,4 @@ This file tracks the current implementation status against the product plan in `
 
 1. Improve status guidance if the product should compare feasibility against recent real pace instead of fixed percentage bands.
 2. Decide whether the fixed year range is still acceptable or whether the app should support arbitrary nearby years.
-3. Speed up bulk editing beyond the current click, shift-click, and shortcut workflow.
+3. Decide whether bulk editing needs to go beyond the current click, shift-click, touch-drag, and shortcut workflow.

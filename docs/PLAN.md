@@ -162,7 +162,9 @@ The current interaction model is:
 
 - click an editable day to select it
 - shift-click to select an editable range, weekends excluded
+- on mobile, tap an editable day to select it and slide over other editable days to extend the range
 - use the action panel to apply a status immediately
+- on mobile, show the same actions in an inline popover near the selected day or range instead of relying on the top action panel
 - use keyboard shortcuts for quick entry
 - click outside the calendar panel to clear the current selection
 
