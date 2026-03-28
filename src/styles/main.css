@@ -30,6 +30,8 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -473,6 +475,7 @@ select {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(27, 37, 46, 0.08);
+  min-width: 0;
 }
 
 .month-header {
@@ -688,6 +691,7 @@ select {
 
   .panel {
     padding: 1rem;
+    min-width: 0;
   }
 
   .section-header {
@@ -701,6 +705,11 @@ select {
 
   .day-editor {
     display: none;
+  }
+
+  .calendar-root {
+    overflow-x: hidden;
+    touch-action: none;
   }
 
   .mobile-day-popover {

@@ -50,6 +50,7 @@
     mobilePopoverAnchorIso: null,
     mobileGesture: {
       active: false,
+      pointerId: null,
       lastTouchedIso: null,
       suppressClickUntil: 0,
     },
@@ -156,6 +157,7 @@
     uiState.selectedDayIsos = [];
     uiState.mobilePopoverAnchorIso = null;
     uiState.mobileGesture.active = false;
+    uiState.mobileGesture.pointerId = null;
     uiState.mobileGesture.lastTouchedIso = null;
   }
 
@@ -442,53 +444,62 @@
     return dayTile;
   }
 
-  function getInteractiveDayTileFromTouch(touch) {
-    if (!touch) {
+  function getInteractiveDayTileFromPoint(clientX, clientY) {
+    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) {
       return null;
     }
 
-    return getInteractiveDayTile(
-      document.elementFromPoint(touch.clientX, touch.clientY),
-    );
+    return getInteractiveDayTile(document.elementFromPoint(clientX, clientY));
   }
 
-  function handleCalendarTouchStart(event) {
-    if (!isMobileMode()) {
+  function handleCalendarPointerDown(event) {
+    if (
+      !isMobileMode() ||
+      !event.isPrimary ||
+      event.pointerType === "mouse"
+    ) {
       return;
     }
 
-    const touch = event.touches && event.touches[0];
     const dayTile =
-      getInteractiveDayTile(event.target) || getInteractiveDayTileFromTouch(touch);
+      getInteractiveDayTile(event.target) ||
+      getInteractiveDayTileFromPoint(event.clientX, event.clientY);
     if (!dayTile) {
       return;
     }
 
     event.preventDefault();
     uiState.mobileGesture.active = true;
+    uiState.mobileGesture.pointerId = event.pointerId;
     uiState.mobileGesture.lastTouchedIso = dayTile.dataset.isoDate;
+    if (typeof elements.calendarRoot.setPointerCapture === "function") {
+      try {
+        elements.calendarRoot.setPointerCapture(event.pointerId);
+      } catch {
+        // Ignore capture failures on browsers with partial support.
+      }
+    }
     handleDaySelection(
       {
         isoDate: dayTile.dataset.isoDate,
         extendSelection: false,
-        inputType: "touch",
+        inputType: "pointer",
       },
       buildYearSnapshot(buildPlanningState()),
     );
   }
 
-  function handleCalendarTouchMove(event) {
-    if (!isMobileMode() || !uiState.mobileGesture.active) {
-      return;
-    }
-
-    const touch = event.touches && event.touches[0];
-    if (!touch) {
+  function handleCalendarPointerMove(event) {
+    if (
+      !isMobileMode() ||
+      !uiState.mobileGesture.active ||
+      event.pointerId !== uiState.mobileGesture.pointerId
+    ) {
       return;
     }
 
     event.preventDefault();
-    const dayTile = getInteractiveDayTileFromTouch(touch);
+    const dayTile = getInteractiveDayTileFromPoint(event.clientX, event.clientY);
     if (
       !dayTile ||
       dayTile.dataset.isoDate === uiState.mobileGesture.lastTouchedIso
@@ -501,20 +512,40 @@
       {
         isoDate: dayTile.dataset.isoDate,
         extendSelection: true,
-        inputType: "touch",
+        inputType: "pointer",
       },
       buildYearSnapshot(buildPlanningState()),
     );
   }
 
-  function finishCalendarTouchGesture() {
-    if (!uiState.mobileGesture.active) {
+  function finishCalendarPointerGesture(event) {
+    if (
+      !uiState.mobileGesture.active ||
+      (event && event.pointerId !== uiState.mobileGesture.pointerId)
+    ) {
       return;
     }
 
+    const finishedPointerId = uiState.mobileGesture.pointerId;
     uiState.mobileGesture.active = false;
+    uiState.mobileGesture.pointerId = null;
     uiState.mobileGesture.lastTouchedIso = null;
     uiState.mobileGesture.suppressClickUntil = Date.now() + 400;
+    if (
+      typeof elements.calendarRoot.releasePointerCapture === "function" &&
+      finishedPointerId !== null
+    ) {
+      try {
+        if (
+          typeof elements.calendarRoot.hasPointerCapture !== "function" ||
+          elements.calendarRoot.hasPointerCapture(finishedPointerId)
+        ) {
+          elements.calendarRoot.releasePointerCapture(finishedPointerId);
+        }
+      } catch {
+        // Ignore capture release failures on browsers with partial support.
+      }
+    }
 
     if (uiState.selectedDayIsos.length) {
       render();
@@ -954,16 +985,12 @@
   elements.sessionImportInput.addEventListener("change", handleSessionImport);
   elements.resetYearButton.addEventListener("click", handleYearReset);
   elements.clearSessionButton.addEventListener("click", handleSessionClear);
-  elements.calendarRoot.addEventListener("touchstart", handleCalendarTouchStart, {
-    passive: false,
-  });
-  elements.calendarRoot.addEventListener("touchmove", handleCalendarTouchMove, {
-    passive: false,
-  });
-  elements.calendarRoot.addEventListener("touchend", finishCalendarTouchGesture);
+  elements.calendarRoot.addEventListener("pointerdown", handleCalendarPointerDown);
+  elements.calendarRoot.addEventListener("pointermove", handleCalendarPointerMove);
+  elements.calendarRoot.addEventListener("pointerup", finishCalendarPointerGesture);
   elements.calendarRoot.addEventListener(
-    "touchcancel",
-    finishCalendarTouchGesture,
+    "pointercancel",
+    finishCalendarPointerGesture,
   );
   document.addEventListener("click", handleClickOutsideCalendar);
   document.addEventListener("keydown", handleKeyboardShortcuts);
