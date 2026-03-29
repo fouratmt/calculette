@@ -573,6 +573,16 @@ select {
   pointer-events: none;
 }
 
+.calendar-root.is-touch-selecting .day-tile.is-selected {
+  z-index: auto;
+  transform: none;
+  box-shadow: 0 0 0 3px rgba(15, 127, 103, 0.22);
+}
+
+.calendar-root.is-touch-selecting .day-tile.is-selected::after {
+  display: none;
+}
+
 .day-tile.is-locked,
 .day-tile:disabled {
   cursor: not-allowed;

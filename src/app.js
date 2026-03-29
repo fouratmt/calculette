@@ -168,6 +168,7 @@
     uiState.mobileGesture.startClientY = null;
     uiState.mobileGesture.startedWithSingleSelection = false;
     uiState.mobileGesture.didExtendSelection = false;
+    elements.calendarRoot.classList.remove("is-touch-selecting");
   }
 
   function clearSelection() {
@@ -654,6 +655,7 @@
       uiState.selectedDayIsos.length === 1 &&
       uiState.selectedDayIsos[0] === dayTile.dataset.isoDate;
     uiState.mobileGesture.didExtendSelection = false;
+    elements.calendarRoot.classList.add("is-touch-selecting");
   }
 
   function handleCalendarTouchMove(event) {
@@ -1212,16 +1214,16 @@
   elements.calendarRoot.addEventListener("touchstart", handleCalendarTouchStart, {
     passive: true,
   });
-  elements.calendarRoot.addEventListener("touchmove", handleCalendarTouchMove, {
+  document.addEventListener("touchstart", handleTouchStartOutsideSelection, {
+    passive: true,
+  });
+  document.addEventListener("touchmove", handleCalendarTouchMove, {
     passive: false,
   });
-  elements.calendarRoot.addEventListener("touchend", finishCalendarTouchGesture, {
+  document.addEventListener("touchend", finishCalendarTouchGesture, {
     passive: true,
   });
-  elements.calendarRoot.addEventListener("touchcancel", finishCalendarTouchGesture, {
-    passive: true,
-  });
-  document.addEventListener("touchstart", handleTouchStartOutsideSelection, {
+  document.addEventListener("touchcancel", finishCalendarTouchGesture, {
     passive: true,
   });
   document.addEventListener("click", handleClickOutsideCalendar);
