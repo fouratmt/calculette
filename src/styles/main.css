@@ -712,10 +712,6 @@ select {
     touch-action: pan-y;
   }
 
-  .day-tile {
-    touch-action: none;
-  }
-
   .mobile-day-popover {
     width: min(100%, calc(100% - 0.5rem));
   }
