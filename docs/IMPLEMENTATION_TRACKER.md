@@ -35,7 +35,7 @@ This file tracks the current implementation status against the product plan in `
 | Single-day editing | Implemented | Clicking an editable day opens immediate status actions for that selection. |
 | Range editing | Implemented | Shift-click selects an editable date range, skipping weekends. |
 | Mobile drag range editing | Implemented | On narrow screens, tapping a day and dragging over others extends the current editable range. |
-| Outside-click selection reset | Implemented | Clicking outside the calendar panel clears the current selection. |
+| Selection reset by repeat tap or away click | Implemented | Repeating a tap on the same editable day clears the selection, and clicks or taps away from day tiles and action controls also clear it. |
 | Keyboard shortcuts | Implemented | `T`, `D`, `C`, `F`, `J`, `R`, and `Escape` are wired globally. |
 | Reset to default | Implemented | Reset removes the override and falls back to the derived default for the date. |
 | Mobile inline action popover | Implemented | On narrow screens, selected days can be edited from a popover anchored in the calendar instead of scrolling back to the top panel. |

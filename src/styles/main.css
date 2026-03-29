@@ -709,6 +709,10 @@ select {
 
   .calendar-root {
     overflow-x: hidden;
+    touch-action: pan-y;
+  }
+
+  .day-tile {
     touch-action: none;
   }
 

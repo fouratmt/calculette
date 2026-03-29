@@ -166,7 +166,8 @@ The current interaction model is:
 - use the action panel to apply a status immediately
 - on mobile, show the same actions in an inline popover near the selected day or range instead of relying on the top action panel
 - use keyboard shortcuts for quick entry
-- click outside the calendar panel to clear the current selection
+- click or tap the same day again to clear the current selection
+- click or tap anywhere away from day tiles and action controls to clear the current selection
 
 Current actions:
 
