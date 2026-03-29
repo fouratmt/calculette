@@ -479,6 +479,15 @@
     return getInteractiveDayTile(document.elementFromPoint(clientX, clientY));
   }
 
+  function syncCalendarSelectionPreview() {
+    const selectedDayIsoSet = new Set(uiState.selectedDayIsos);
+    const dayTiles = elements.calendarRoot.querySelectorAll(".day-tile[data-iso-date]");
+
+    for (const dayTile of dayTiles) {
+      dayTile.classList.toggle("is-selected", selectedDayIsoSet.has(dayTile.dataset.isoDate));
+    }
+  }
+
   function getTrackedTouch(touchList) {
     if (
       !touchList ||
@@ -693,7 +702,7 @@
 
     selectSingleDay(uiState.mobileGesture.startIso, snapshot);
     selectDayRange(dayTile.dataset.isoDate, snapshot);
-    render();
+    syncCalendarSelectionPreview();
   }
 
   function finishCalendarTouchGesture(event) {
