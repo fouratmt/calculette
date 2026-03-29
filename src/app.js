@@ -749,7 +749,9 @@
     }
 
     return Boolean(
-      targetElement.closest(".day-tile[data-iso-date], .mobile-day-popover, #day-editor"),
+      targetElement.closest(
+        ".day-tile[data-iso-date], .mobile-day-popover-actions, .day-action-button, #day-editor",
+      ),
     );
   }
 

@@ -338,6 +338,7 @@ select {
   backdrop-filter: blur(10px);
   display: grid;
   gap: 0.8rem;
+  pointer-events: none;
 }
 
 .mobile-day-popover::after {
@@ -381,6 +382,7 @@ select {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
+  pointer-events: auto;
 }
 
 .day-action-button.is-compact {
