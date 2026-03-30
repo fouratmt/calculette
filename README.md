@@ -1,6 +1,6 @@
 # calculette_jours_homme
 
-Small static scaffold for a freelance workday planning app.
+Small static browser app for planning worked days over a selected year.
 
 ## Current Setup
 
@@ -41,7 +41,8 @@ Small static scaffold for a freelance workday planning app.
 - `docs/IMPLEMENTATION_TRACKER.md` records what is currently implemented against that plan.
 - The browser entry point is loaded with plain deferred scripts so `index.html` works when opened directly from disk.
 - Normal legal workdays are prefilled as worked days, and the calendar is used mainly to subtract or adjust days.
-- Semantic day statuses are preserved in storage as `worked_full`, `worked_half`, `not_worked`, `company_closed`, and `administrative_holiday`.
+- Explicit overrides are stored per year under `years[year].dayOverrides` with the canonical status keys `worked_full`, `worked_half`, `not_worked`, `company_closed`, and `administrative_holiday`.
+- Generated holidays take precedence over weekend rendering, so a holiday that falls on a weekend is shown and edited as a holiday.
 - Local storage isolates targets and overrides per selected year across `2025` to `2028`.
 - `src/core` holds business rules and summary calculations.
 - `src/data` holds persistence and holiday data sources.

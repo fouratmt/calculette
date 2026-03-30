@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This repo is a small static browser app for planning freelance worked days and half-days over a selected year. Keep the implementation lightweight, readable, and directly runnable from `index.html`.
+This repo is a small static browser app for planning worked days and half-days over a selected year. Keep the implementation lightweight, readable, and directly runnable from `index.html`.
 
 ## Source Of Truth
 
@@ -23,11 +23,11 @@ This repo is a small static browser app for planning freelance worked days and h
 ## Working Rules
 
 - Prefer plain HTML, CSS, and JavaScript. Do not add a framework or build step unless there is a clear reason.
-- Keep all data local. Persist only explicit user overrides in `state.dayOverrides`.
-- Preserve the status resolution order: override -> weekend -> French holiday -> available.
+- Keep all data local. Persist only explicit user overrides in `years[year].dayOverrides`.
+- Preserve the status resolution order: override -> French holiday -> weekend -> `worked_full`.
 - Keep the app usable when `index.html` is opened directly from disk.
 - When behavior changes, update the relevant docs in the same pass.
 
 ## Current Priority
 
-Add day interaction so users can set full day, half day, not worked, company closed, holiday, mandated day off, or reset to default. Each change should save immediately and refresh the summary plus calendar.
+Keep the current day-interaction flow stable: users can set full day, half day, not worked, company closed, holiday, or reset to default, and each change should save immediately and refresh the summary plus calendar.

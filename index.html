@@ -3,18 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Calculette jours-homme</title>
+    <title>Calculette quota annuel</title>
     <link rel="stylesheet" href="./src/styles/main.css" />
   </head>
   <body>
     <div class="page-shell">
       <header class="hero">
-        <p class="eyebrow">Pilotage freelance</p>
-        <h1>Calculette jours-homme</h1>
-        <p class="hero-copy">
-          Suivez vos jours travaillés, congés et fermetures sur l'année avec
-          une vue claire de votre trajectoire.
-        </p>
+        <div class="hero-grid">
+          <div class="hero-main">
+            <p class="eyebrow">Calculette quota annuel</p>
+            <h1>Suivi du quota client</h1>
+            <p class="hero-copy">
+              Cette application sert à piloter, sur une année complète, les
+              jours réellement travaillés, les congés prévus et les demi-journées,
+              tout en gardant un oeil clair sur le volume de jours à ne pas
+              dépasser chez un client.
+            </p>
+            <div class="hero-highlights" aria-label="Points forts de l'application">
+              <span class="hero-pill">Suivi du réalisé et du prévisionnel</span>
+              <span class="hero-pill">100 % local</span>
+            </div>
+          </div>
+
+          <aside class="hero-aside" aria-label="Résumé de l'application">
+            <p class="hero-panel-copy">
+              Le calendrier part d'une base simple : les jours ouvrés sont déjà
+              comptés comme travaillés. Il suffit ensuite d'ajuster ce qui change
+              réellement dans l'année : congés, demi-journées, fermetures ou
+              jours fériés.
+            </p>
+            <dl class="hero-facts">
+              <div class="hero-fact">
+                <dt>Objectif</dt>
+                <dd>Éviter de dépasser le plafond de jours demandé par le client</dd>
+              </div>
+              <div class="hero-fact">
+                <dt>Fonctionnement</dt>
+                <dd>Chaque changement est sauvegardé localement et recalculé immédiatement</dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
       </header>
 
       <main class="layout">
@@ -68,27 +97,42 @@
 
           <div class="summary-grid">
             <article class="metric-card">
-              <span class="metric-label">Objectif</span>
+              <div class="metric-heading">
+                <span class="metric-label">Objectif</span>
+                <span class="metric-note">Cible sur l'année</span>
+              </div>
               <strong id="target-days-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Travaillé</span>
+              <div class="metric-heading">
+                <span class="metric-label">Travaillé</span>
+                <span class="metric-note">Total déjà compté</span>
+              </div>
               <strong id="worked-total-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span class="metric-label">Jours non travaillés</span>
+              <div class="metric-heading">
+                <span class="metric-label">Jours non travaillés</span>
+                <span class="metric-note">Absences déjà posées</span>
+              </div>
               <strong id="not-worked-days-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card">
-              <span id="target-gap-label" class="metric-label">Reste à faire</span>
+              <div class="metric-heading">
+                <span id="target-gap-label" class="metric-label">Reste à faire</span>
+                <span class="metric-note">Solde à ajuster</span>
+              </div>
               <strong id="remaining-target-value" class="metric-value">0</strong>
             </article>
 
             <article class="metric-card status-card">
-              <span class="metric-label">Statut</span>
+              <div class="metric-heading">
+                <span class="metric-label">Statut</span>
+                <span class="metric-note">Marge actuelle estimée</span>
+              </div>
               <strong id="status-value" class="metric-value">Faisable</strong>
             </article>
           </div>
@@ -197,12 +241,23 @@
 
       <footer class="app-footer">
         <div class="app-footer-inner">
-          <p class="app-footer-title">Calculette locale et privée</p>
+          <p class="app-footer-title">Pourquoi cet outil existe</p>
+          <p class="app-footer-copy">
+            Je travaille dans le conseil IT en France depuis près de dix ans, et
+            je me retrouve chaque année avec le même besoin : suivre précisément
+            le nombre de jours travaillés et le quota de jours à ne pas dépasser
+            chez certains clients.
+          </p>
+          <p class="app-footer-copy">
+            Pendant longtemps, je faisais ce suivi dans un tableur ou dans un
+            simple fichier texte. Cet outil est né pour rendre ce pilotage plus
+            simple, plus lisible et entièrement local.
+          </p>
           <p class="app-footer-copy">
             Les calculs et la session restent dans ce navigateur. Vous pouvez
             exporter vos données en JSON à tout moment.
           </p>
-          <p class="app-footer-meta">Périmètre actuel : années 2025, 2026, 2027 et 2028.</p>
+          <!-- <p class="app-footer-meta">Périmètre actuel : années 2025, 2026, 2027 et 2028.</p> -->
         </div>
       </footer>
     </div>

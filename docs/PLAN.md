@@ -4,7 +4,7 @@
 
 ### Product Summary
 
-Build a lightweight static browser app for freelance consultants to pilot their worked days over a selected year.
+Build a lightweight static browser app to pilot worked days over a selected year.
 
 Current scope:
 
@@ -41,9 +41,9 @@ The app currently starts from a filled planning baseline rather than an empty on
 
 - a normal legal weekday defaults to `worked_full`
 - French holidays are generated automatically for the selected year
-- weekends remain non-working and are locked in the UI
-- when a date is both a holiday and a weekend, the holiday label takes visual precedence
-- the calendar is mainly used to turn default worked days into non-worked days, closures, mandated days off, holidays, or half-days
+- pure weekend dates remain non-working and are locked in the UI
+- when a date is both a holiday and a weekend, the holiday state takes visual precedence and the date stays editable like a holiday
+- the calendar is mainly used to turn default worked days into non-worked days, closures, holidays, or half-days
 
 ### Editable Day Statuses
 
@@ -107,6 +107,8 @@ The calculation layer currently derives:
 - `reducibleDays`
 - `requiredUtilizationRate`
 
+It also computes supporting values such as `totalLegalWorkdays`, `explicitlyNotWorkedDays`, `companyClosedDays`, `statusTone`, and `statusLabel` for the calendar caption and status rendering.
+
 The summary UI exposes only the headline metrics:
 
 - target
@@ -121,7 +123,7 @@ The summary UI exposes only the headline metrics:
 The current status labels are driven by fixed thresholds:
 
 - `Dépassé` when the worked total already exceeds the target
-- `Objectif atteint` when the remaining target is `0`
+- `Objectif atteint` when the target is met exactly
 - `Impossible` when no adjustable capacity remains or the required rate exceeds `100 %`
 - `Limite` above `90 %`
 - `À ajuster` above `75 %`
@@ -151,18 +153,18 @@ Current calendar behavior:
 
 - Monday-first month grids
 - monthly legal-workday and worked-total summaries
-- distinct visual states for worked, half-day, non-worked, company-closed, mandated-day-off, holiday, and weekend
+- distinct visual states for worked, half-day, non-worked, company-closed, holiday, and weekend
 - selected-day highlighting
 - today's date gets a small patch-style visual cue
 - future default-worked days visually marked as planned
-- weekend tiles visible but not editable
+- pure weekend tiles visible but not editable, while weekend holidays render as holidays and stay editable
 
 ### Day Interaction
 
 The current interaction model is:
 
 - click an editable day to select it
-- shift-click to select an editable range, weekends excluded
+- shift-click to select an editable range, with pure weekends excluded
 - on mobile, tap an editable day to select it and slide over other editable days to extend the range
 - use the action panel to apply a status immediately
 - on mobile, show the same actions in an inline popover near the selected day or selected range instead of relying on the top action panel
@@ -175,7 +177,7 @@ On mobile, once the user has scrolled down the yearly view, a floating button ca
 
 Current actions:
 
-- `Travaillé`
+- `Travaillé 1`
 - `Travaillé 0,5`
 - `Congé`
 - `Fermeture`
