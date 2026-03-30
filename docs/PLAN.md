@@ -153,6 +153,7 @@ Current calendar behavior:
 - monthly legal-workday and worked-total summaries
 - distinct visual states for worked, half-day, non-worked, company-closed, mandated-day-off, holiday, and weekend
 - selected-day highlighting
+- today's date gets a small patch-style visual cue
 - future default-worked days visually marked as planned
 - weekend tiles visible but not editable
 
@@ -164,10 +165,13 @@ The current interaction model is:
 - shift-click to select an editable range, weekends excluded
 - on mobile, tap an editable day to select it and slide over other editable days to extend the range
 - use the action panel to apply a status immediately
-- on mobile, show the same actions in an inline popover near the selected day or range instead of relying on the top action panel
+- on mobile, show the same actions in an inline popover near the selected day or selected range instead of relying on the top action panel
 - use keyboard shortcuts for quick entry
 - click or tap the same day again to clear the current selection
+- on mobile, tapping any day inside the current selected range again clears the current selection
 - click or tap anywhere away from day tiles and action controls to clear the current selection
+
+On mobile, once the user has scrolled down the yearly view, a floating button can jump back to the top quickly.
 
 Current actions:
 

@@ -115,6 +115,13 @@
         dayMeta.className = "day-meta";
         dayMeta.textContent = record.holidayShortLabel || meta.shortLabel || "";
 
+        if (isSameCalendarDay(date, effectiveToday)) {
+          const todayBadge = document.createElement("span");
+          todayBadge.className = "day-badge day-badge-today";
+          todayBadge.textContent = "today";
+          dayTile.append(todayBadge);
+        }
+
         dayTile.append(dayNumber, dayMeta);
         if (isEditable) {
           dayTile.addEventListener("click", function handleClick(event) {

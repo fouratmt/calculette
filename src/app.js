@@ -56,6 +56,7 @@
       startIso: null,
       startClientX: null,
       startClientY: null,
+      startedOnSelectedDay: false,
       startedWithSingleSelection: false,
       didExtendSelection: false,
       suppressClickUntil: 0,
@@ -91,20 +92,53 @@
     clearSessionButton: document.querySelector("#clear-session-button"),
     sessionImportInput: document.querySelector("#session-import-input"),
     sessionFeedback: document.querySelector("#session-feedback"),
+    scrollToTopButton: document.createElement("button"),
   };
 
+  elements.scrollToTopButton.type = "button";
+  elements.scrollToTopButton.className = "scroll-to-top-button";
+  elements.scrollToTopButton.textContent = "Haut";
+  elements.scrollToTopButton.setAttribute("aria-label", "Revenir en haut");
+  elements.scrollToTopButton.dataset.visible = "false";
+  document.body.append(elements.scrollToTopButton);
+
   const dayActions = [
-    { type: "status", status: "worked_full", label: "Travaillé 1", shortcut: "t" },
-    { type: "status", status: "worked_half", label: "Travaillé 0,5", shortcut: "d" },
-    { type: "status", status: "not_worked", label: "Congé", shortcut: "c" },
-    { type: "status", status: "company_closed", label: "Fermeture", shortcut: "f" },
+    {
+      type: "status",
+      status: "worked_full",
+      label: "Travaillé 1",
+      compactLabel: "1 j",
+      shortcut: "t",
+    },
+    {
+      type: "status",
+      status: "worked_half",
+      label: "Travaillé 0,5",
+      compactLabel: "0,5 j",
+      shortcut: "d",
+    },
+    {
+      type: "status",
+      status: "not_worked",
+      label: "Congé",
+      compactLabel: "Congé",
+      shortcut: "c",
+    },
+    {
+      type: "status",
+      status: "company_closed",
+      label: "Fermeture",
+      compactLabel: "Fermé",
+      shortcut: "f",
+    },
     {
       type: "status",
       status: "administrative_holiday",
       label: "Jour férié",
+      compactLabel: "Férié",
       shortcut: "j",
     },
-    { type: "reset", label: "Réinitialiser", shortcut: "r" },
+    { type: "reset", label: "Réinitialiser", compactLabel: "Défaut", shortcut: "r" },
   ];
 
   function formatNumber(value) {
@@ -166,6 +200,7 @@
     uiState.mobileGesture.startIso = null;
     uiState.mobileGesture.startClientX = null;
     uiState.mobileGesture.startClientY = null;
+    uiState.mobileGesture.startedOnSelectedDay = false;
     uiState.mobileGesture.startedWithSingleSelection = false;
     uiState.mobileGesture.didExtendSelection = false;
     elements.calendarRoot.classList.remove("is-touch-selecting");
@@ -390,13 +425,18 @@
 
   function createDayActionButton(action, snapshot, uniformSelectionStatus, options) {
     const settings = options || {};
+    const buttonLabel = settings.label || action.label;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "day-action-button";
     button.textContent =
       settings.includeShortcut === false
-        ? action.label
-        : `${action.label} (${action.shortcut.toUpperCase()})`;
+        ? buttonLabel
+        : `${buttonLabel} (${action.shortcut.toUpperCase()})`;
+    if (buttonLabel !== action.label) {
+      button.setAttribute("aria-label", action.label);
+      button.title = action.label;
+    }
 
     for (const className of settings.classNames || []) {
       button.classList.add(className);
@@ -651,6 +691,9 @@
     uiState.mobileGesture.startIso = dayTile.dataset.isoDate;
     uiState.mobileGesture.startClientX = touch.clientX;
     uiState.mobileGesture.startClientY = touch.clientY;
+    uiState.mobileGesture.startedOnSelectedDay = uiState.selectedDayIsos.includes(
+      dayTile.dataset.isoDate,
+    );
     uiState.mobileGesture.startedWithSingleSelection =
       uiState.selectedDayIsos.length === 1 &&
       uiState.selectedDayIsos[0] === dayTile.dataset.isoDate;
@@ -719,7 +762,7 @@
 
     const startIso = uiState.mobileGesture.startIso;
     const shouldToggleSelectedDayOff =
-      uiState.mobileGesture.startedWithSingleSelection &&
+      uiState.mobileGesture.startedOnSelectedDay &&
       !uiState.mobileGesture.didExtendSelection &&
       Boolean(startIso);
 
@@ -777,6 +820,57 @@
 
     clearSelection();
     render();
+  }
+
+  function getSelectedDayBounds() {
+    if (!uiState.selectedDayIsos.length) {
+      return null;
+    }
+
+    const selectedTiles = uiState.selectedDayIsos
+      .map(function mapSelectedDay(isoDate) {
+        return elements.calendarRoot.querySelector(`.day-tile[data-iso-date="${isoDate}"]`);
+      })
+      .filter(Boolean);
+    if (!selectedTiles.length) {
+      return null;
+    }
+
+    const initialRect = selectedTiles[0].getBoundingClientRect();
+
+    return selectedTiles.reduce(
+      function reduceBounds(bounds, dayTile) {
+        const tileRect = dayTile.getBoundingClientRect();
+
+        return {
+          left: Math.min(bounds.left, tileRect.left),
+          right: Math.max(bounds.right, tileRect.right),
+          top: Math.min(bounds.top, tileRect.top),
+          bottom: Math.max(bounds.bottom, tileRect.bottom),
+        };
+      },
+      {
+        left: initialRect.left,
+        right: initialRect.right,
+        top: initialRect.top,
+        bottom: initialRect.bottom,
+      },
+    );
+  }
+
+  function updateScrollToTopButtonVisibility() {
+    const shouldShow =
+      isMobileMode() &&
+      (global.scrollY || global.pageYOffset || 0) > 360;
+
+    elements.scrollToTopButton.dataset.visible = shouldShow ? "true" : "false";
+  }
+
+  function scrollToTop() {
+    global.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   function handleKeyboardShortcuts(event) {
@@ -1087,6 +1181,7 @@
         createDayActionButton(action, snapshot, selectionDetails.uniformSelectionStatus, {
           classNames: ["is-compact"],
           includeShortcut: false,
+          label: action.compactLabel || action.label,
         }),
       );
     }
@@ -1096,21 +1191,25 @@
 
     const rootRect = elements.calendarRoot.getBoundingClientRect();
     const anchorRect = anchorTile.getBoundingClientRect();
+    const selectionBounds = getSelectedDayBounds() || {
+      left: anchorRect.left,
+      right: anchorRect.right,
+      top: anchorRect.top,
+      bottom: anchorRect.bottom,
+    };
     const popoverRect = popover.getBoundingClientRect();
     const horizontalPadding = 8;
     const verticalOffset = 12;
     const preferredTop =
-      anchorRect.top - rootRect.top - popoverRect.height - verticalOffset;
-    const fallbackTop = anchorRect.bottom - rootRect.top + verticalOffset;
+      selectionBounds.top - rootRect.top - popoverRect.height - verticalOffset;
+    const fallbackTop = selectionBounds.bottom - rootRect.top + verticalOffset;
     const maxTop = Math.max(
       verticalOffset,
       elements.calendarRoot.scrollHeight - popoverRect.height - verticalOffset,
     );
+    const anchorCenterX = (selectionBounds.left + selectionBounds.right) / 2;
     const left = clamp(
-      anchorRect.left -
-        rootRect.left +
-        anchorRect.width / 2 -
-        popoverRect.width / 2,
+      anchorCenterX - rootRect.left - popoverRect.width / 2,
       horizontalPadding,
       Math.max(
         horizontalPadding,
@@ -1125,6 +1224,10 @@
       verticalOffset,
       maxTop,
     )}px`;
+    popover.style.setProperty(
+      "--mobile-popover-tip-left",
+      `${clamp(anchorCenterX - rootRect.left - left, 20, popoverRect.width - 20)}px`,
+    );
     popover.dataset.placement = placeAbove ? "above" : "below";
   }
 
@@ -1146,6 +1249,7 @@
       },
     });
     renderMobileDayPopover(snapshot);
+    updateScrollToTopButtonVisibility();
   }
 
   function updateStateFromInputs(event) {
@@ -1204,6 +1308,7 @@
   elements.sessionImportInput.addEventListener("change", handleSessionImport);
   elements.resetYearButton.addEventListener("click", handleYearReset);
   elements.clearSessionButton.addEventListener("click", handleSessionClear);
+  elements.scrollToTopButton.addEventListener("click", scrollToTop);
   elements.calendarRoot.addEventListener("pointerdown", handleCalendarPointerDown);
   elements.calendarRoot.addEventListener("pointermove", handleCalendarPointerMove);
   elements.calendarRoot.addEventListener("pointerup", finishCalendarPointerGesture);
@@ -1229,6 +1334,9 @@
   document.addEventListener("click", handleClickOutsideCalendar);
   document.addEventListener("keydown", handleKeyboardShortcuts);
   global.addEventListener("resize", handleViewportChange);
+  global.addEventListener("scroll", updateScrollToTopButtonVisibility, {
+    passive: true,
+  });
 
   if (mobileViewportQuery && typeof mobileViewportQuery.addEventListener === "function") {
     mobileViewportQuery.addEventListener("change", handleViewportChange);

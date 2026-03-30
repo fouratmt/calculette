@@ -30,15 +30,16 @@ This file tracks the current implementation status against the product plan in `
 | Feasibility helper copy | Implemented | Helper text uses recoverable and reducible capacity calculations. |
 | Fixed status-threshold heuristic | Implemented | Status labels map from fixed utilization thresholds. |
 | Recent-pace-aware status heuristic | Not implemented | The current status logic does not compare with recent actual performance. |
-| Full-year calendar rendering | Implemented | All 12 months render with Monday-first grids and monthly summaries. |
+| Full-year calendar rendering | Implemented | All 12 months render with Monday-first grids, monthly summaries, and a small patch-style marker for today's date. |
 | Visual distinction between statuses | Implemented | Worked, half-day, non-worked, company-closed, mandated-day-off, holiday, and weekend have separate styles. |
 | Single-day editing | Implemented | Clicking an editable day opens immediate status actions for that selection. |
 | Range editing | Implemented | Shift-click selects an editable date range, skipping weekends. |
 | Mobile drag range editing | Implemented | On narrow screens, tapping a day and dragging over others extends the current editable range. |
-| Selection reset by repeat tap or away click | Implemented | Repeating a tap on the same editable day clears the selection, and clicks or taps away from day tiles and action controls also clear it. |
+| Selection reset by repeat tap or away click | Implemented | Repeating a tap on the same editable day or on an already selected mobile range clears the selection, and clicks or taps away from day tiles and action controls also clear it. |
 | Keyboard shortcuts | Implemented | `T`, `D`, `C`, `F`, `J`, `R`, and `Escape` are wired globally. |
 | Reset to default | Implemented | Reset removes the override and falls back to the derived default for the date. |
-| Mobile inline action popover | Implemented | On narrow screens, selected days can be edited from a popover anchored in the calendar instead of scrolling back to the top panel. |
+| Mobile inline action popover | Implemented | On narrow screens, selected days can be edited from a popover whose pointer follows the selected day or selected range in the calendar. |
+| Mobile scroll-to-top button | Implemented | After scrolling down on narrow screens, a floating button can jump back to the top quickly. |
 | Local JSON backup and restore | Implemented | The session panel exports and imports JSON state files. |
 | Current-year reset | Implemented | The session panel can rebuild the selected year from defaults. |
 | Full local-session clear | Implemented | Stored local state can be removed and recreated from scratch. |
