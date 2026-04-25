@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">MonQuota app icon</title>
+  <desc id="desc">A calendar page with colored planning days and a quota progress ring.</desc>
+  <defs>
+    <linearGradient id="bg" x1="128" y1="64" x2="896" y2="960" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#103d46" />
+      <stop offset="0.56" stop-color="#0d766d" />
+      <stop offset="1" stop-color="#f08a5d" />
+    </linearGradient>
+    <linearGradient id="paper" x1="278" y1="218" x2="756" y2="810" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fffdf8" />
+      <stop offset="1" stop-color="#f8f3eb" />
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="28" stdDeviation="30" flood-color="#08252b" flood-opacity="0.32" />
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="228" fill="url(#bg)" />
+  <circle cx="762" cy="262" r="206" fill="#ffffff" opacity="0.12" />
+  <circle cx="254" cy="792" r="244" fill="#f4eee4" opacity="0.16" />
+
+  <g filter="url(#shadow)">
+    <rect x="232" y="204" width="560" height="624" rx="72" fill="url(#paper)" />
+    <rect x="232" y="204" width="560" height="138" rx="72" fill="#103d46" />
+    <path d="M232 276h560v76H232z" fill="#103d46" />
+    <circle cx="356" cy="204" r="38" fill="#f08a5d" />
+    <circle cx="668" cy="204" r="38" fill="#f08a5d" />
+    <rect x="338" y="142" width="36" height="108" rx="18" fill="#fff1be" />
+    <rect x="650" y="142" width="36" height="108" rx="18" fill="#fff1be" />
+
+    <g fill="#d7ece8">
+      <rect x="314" y="412" width="88" height="88" rx="22" />
+      <rect x="468" y="412" width="88" height="88" rx="22" />
+      <rect x="622" y="412" width="88" height="88" rx="22" />
+    </g>
+    <rect x="314" y="556" width="88" height="88" rx="22" fill="#c9f0de" />
+    <path d="M468 556h88v88h-88z" fill="#fff1be" />
+    <path d="M468 556h88v88h-88z" rx="22" fill="#fff1be" />
+    <path d="M468 556h88v88h-88z" fill="#fff1be" />
+    <rect x="468" y="556" width="88" height="88" rx="22" fill="#fff1be" />
+    <rect x="622" y="556" width="88" height="88" rx="22" fill="#f0dbd9" />
+    <rect x="314" y="700" width="88" height="88" rx="22" fill="#dce8ff" />
+    <rect x="468" y="700" width="88" height="88" rx="22" fill="#c9f0de" />
+    <rect x="622" y="700" width="88" height="88" rx="22" fill="#3c4650" />
+  </g>
+
+  <circle cx="704" cy="704" r="140" fill="none" stroke="#0d766d" stroke-width="44" opacity="0.24" />
+  <path d="M704 564a140 140 0 1 1-123.74 74.68" fill="none" stroke="#f08a5d" stroke-width="44" stroke-linecap="round" />
+  <circle cx="704" cy="704" r="78" fill="#103d46" />
+  <path d="M666 706l28 30 64-78" fill="none" stroke="#fff1be" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

@@ -17,7 +17,7 @@ run-uvx host="127.0.0.1" port="4173":
 
 check:
   @echo "Checking browser scripts with Node"
-  @rg --files -g '*.js' src tests | while IFS= read -r file; do \
+  @rg --files -g '*.js' src tests service-worker.js | while IFS= read -r file; do \
     node --check "$file"; \
   done
   @just test

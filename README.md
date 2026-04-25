@@ -8,7 +8,7 @@ Small static browser app for planning worked days over a selected year.
 - No backend
 - Local state stored in `localStorage`
 - French public holidays generated in code
-- Public launch assets included: favicon, web manifest, social card, sitemap, `robots.txt`, `CNAME`, and privacy page
+- Public launch assets included: polished PWA icons, maskable install icons, web manifest screenshots, service worker, social card, sitemap, `robots.txt`, `CNAME`, and privacy page
 
 ## Structure
 
@@ -18,6 +18,9 @@ Small static browser app for planning worked days over a selected year.
 ├── .nojekyll
 ├── 404.html
 ├── CNAME
+├── assets/
+│   ├── icons/
+│   └── screenshots/
 ├── docs/
 │   ├── DEPLOYMENT_CHECKLIST.md
 │   ├── IMPLEMENTATION_TRACKER.md
@@ -26,6 +29,7 @@ Small static browser app for planning worked days over a selected year.
 ├── favicon.png
 ├── justfile
 ├── robots.txt
+├── service-worker.js
 ├── site.webmanifest
 ├── sitemap.xml
 ├── social-card.png
@@ -108,6 +112,7 @@ just test
 - Enforce HTTPS is enabled.
 - Canonical/Open Graph/Twitter URLs point to `https://monquota.fr/`.
 - `sitemap.xml` and `robots.txt` use absolute production URLs.
-- Social preview metadata points to the production PNG social card.
+- Social preview metadata points to the production PNG social card, and the manifest includes square install icons, maskable install icons, and wide and narrow screenshots.
+- The PWA shell uses `#103d46` for mobile browser chrome and `#f4eee4` for the launch background, matching the app palette.
 - Still pending after deployment: production smoke test and social preview rendering check.
 - GitHub Pages manages response headers and cache policy for plain static hosting; use a proxy/CDN only if custom headers or cache rules become mandatory.

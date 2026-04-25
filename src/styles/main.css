@@ -392,14 +392,6 @@ a:focus-visible {
   align-content: start;
 }
 
-.metric-note {
-  margin: 0;
-  color: rgba(93, 107, 117, 0.88);
-  font-size: 0.74rem;
-  font-style: italic;
-  line-height: 1.35;
-}
-
 .metric-value {
   font-size: clamp(1.5rem, 2vw, 2.2rem);
   line-height: 1;

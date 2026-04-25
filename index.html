@@ -8,13 +8,18 @@
       content="Planifiez vos jours travaillés, congés, demi-journées et fermetures sur une année complète avec un calendrier 100 % local."
     />
     <meta name="robots" content="index,follow" />
-    <meta name="theme-color" content="#f4eee4" />
+    <meta name="theme-color" content="#103d46" />
     <meta name="application-name" content="Calculette quota annuel" />
     <meta name="apple-mobile-web-app-title" content="Quota annuel" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="msapplication-TileColor" content="#103d46" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="color-scheme" content="light" />
     <link rel="canonical" href="https://monquota.fr/" />
     <link rel="icon" href="./favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:site_name" content="Calculette quota annuel" />
@@ -135,7 +140,6 @@
             <article class="metric-card">
               <div class="metric-heading">
                 <span class="metric-label">Objectif</span>
-                <span class="metric-note">Cible sur l'année</span>
               </div>
               <strong id="target-days-value" class="metric-value">0</strong>
             </article>
@@ -143,7 +147,6 @@
             <article class="metric-card">
               <div class="metric-heading">
                 <span class="metric-label">Travaillé</span>
-                <span class="metric-note">Total déjà compté</span>
               </div>
               <strong id="worked-total-value" class="metric-value">0</strong>
             </article>
@@ -151,7 +154,6 @@
             <article class="metric-card">
               <div class="metric-heading">
                 <span class="metric-label">Jours non travaillés</span>
-                <span class="metric-note">Absences déjà posées</span>
               </div>
               <strong id="not-worked-days-value" class="metric-value">0</strong>
             </article>
@@ -159,7 +161,6 @@
             <article class="metric-card">
               <div class="metric-heading">
                 <span id="target-gap-label" class="metric-label">Reste à faire</span>
-                <span class="metric-note">Solde à ajuster</span>
               </div>
               <strong id="remaining-target-value" class="metric-value">0</strong>
             </article>
@@ -167,7 +168,6 @@
             <article class="metric-card status-card">
               <div class="metric-heading">
                 <span class="metric-label">Statut</span>
-                <span class="metric-note">Marge actuelle estimée</span>
               </div>
               <strong id="status-value" class="metric-value">Faisable</strong>
             </article>

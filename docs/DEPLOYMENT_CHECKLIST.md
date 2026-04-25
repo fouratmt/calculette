@@ -11,8 +11,9 @@ This app is static and already runnable from `index.html`. The target hosting se
 | GitHub Pages static serving compatibility | Implemented | `.nojekyll` is present so GitHub Pages serves the static tree without Jekyll processing. | None. |
 | Direct local execution | Implemented | The app uses plain deferred scripts and works from `index.html` without a build step. | Keep this behavior when future changes are made. |
 | Local-only data model | Implemented | Planning data stays in `localStorage`; JSON export/import is available for migration between origins. | Tell users to export/import before moving from preview or local URLs to production. |
-| Metadata | Implemented | Description, robots, theme color, favicon, manifest, canonical URL, Open Graph, and Twitter tags are present. Production URLs point to `https://monquota.fr/`. | Recheck values only if the production domain changes. |
-| Favicon and app manifest | Implemented | `favicon.png` and `site.webmanifest` are present and linked from `index.html`. | Verify the production host serves `.webmanifest` as `application/manifest+json` or a compatible JSON type. |
+| Metadata | Implemented | Description, robots, mobile theme color, polished favicon, deferred manifest registration, canonical URL, Open Graph, and Twitter tags are present. Production URLs point to `https://monquota.fr/`. | Recheck values only if the production domain changes. |
+| Favicon and app manifest | Implemented | `favicon.png`, Apple touch icon, regular install icons, maskable install icons, manifest screenshots, and `site.webmanifest` are present; the manifest link is registered after first paint. | Verify the production host serves `.webmanifest` as `application/manifest+json` or a compatible JSON type. |
+| PWA service worker | Implemented | `service-worker.js` caches the static app shell and is registered only on secure browser origins, so direct `file://` usage still works without service worker assumptions. | After deployment, verify the service worker activates and the installed app opens offline. |
 | Social sharing image | Implemented | `social-card.png` is production-hosted and referenced by Open Graph/Twitter metadata; `social-card.svg` remains as the editable source. | None. |
 | Search engine access | Implemented | `robots.txt` allows crawling and points to `https://monquota.fr/sitemap.xml`; `sitemap.xml` contains absolute production URLs. | Submit or inspect the sitemap only if search indexing matters. |
 | Custom domain | Done | `CNAME` contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. | None. |
@@ -31,6 +32,7 @@ This app is static and already runnable from `index.html`. The target hosting se
 3. Confirm the root `CNAME` file contains only `monquota.fr`.
 4. DNS is configured and the custom domain is verified in GitHub Pages settings.
 5. Enforce HTTPS is enabled.
+6. Verify that the production page registers `service-worker.js`; service workers require HTTPS, except on localhost.
 
 GitHub Pages limitations:
 
@@ -106,6 +108,8 @@ Manual smoke tests:
 
 1. Open the production homepage and confirm the favicon and manifest are detected.
 2. Confirm the browser console is clean.
-3. Verify the session warning text mentions browser-and-address scoped data.
-4. Re-run the smoke test on the real production URL.
-5. Check social previews against the production PNG image URL.
+3. Confirm the manifest detects regular icons, maskable icons, screenshots, and the dark teal mobile theme color.
+4. Install the app on a mobile browser and verify the browser chrome/status color matches the app palette.
+5. Verify the session warning text mentions browser-and-address scoped data.
+6. Re-run the smoke test on the real production URL.
+7. Check social previews against the production PNG image URL.

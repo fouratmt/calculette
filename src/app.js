@@ -912,6 +912,20 @@
     document.head.append(manifestLink);
   }
 
+  function registerServiceWorker() {
+    if (
+      !("serviceWorker" in navigator) ||
+      !global.isSecureContext ||
+      global.location.protocol === "file:"
+    ) {
+      return;
+    }
+
+    navigator.serviceWorker.register("./service-worker.js").catch(function ignoreFailure() {
+      // The app still works online and from disk if service worker registration fails.
+    });
+  }
+
   function handleKeyboardShortcuts(event) {
     if (event.key === "Escape" && uiState.selectedDayIsos.length) {
       event.preventDefault();
@@ -1450,4 +1464,5 @@
 
   render({ deferCalendar: true });
   runAfterFirstPaint(registerManifestLink);
+  runAfterFirstPaint(registerServiceWorker);
 })(window);

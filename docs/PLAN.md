@@ -16,6 +16,7 @@ Current scope:
 - direct execution from `index.html` without a build step
 - local backup and restore through JSON export and import
 - public-ready static metadata and assets for hosted deployment
+- PWA install support with a manifest, app icons, maskable icons, mobile theme color, and static app-shell caching
 - GitHub Pages deployment support for a static custom-domain site
 
 ### Primary Outcome

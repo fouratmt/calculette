@@ -3,17 +3,71 @@
   "short_name": "Quota annuel",
   "description": "Planifiez vos jours travaillés, congés, demi-journées et fermetures sur une année complète avec un calendrier 100 % local.",
   "lang": "fr-FR",
+  "id": "/",
   "start_url": "./",
   "scope": "./",
+  "orientation": "portrait-primary",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#f4eee4",
-  "theme_color": "#f4eee4",
+  "theme_color": "#103d46",
+  "categories": ["productivity", "utilities", "business"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "./favicon.png",
-      "sizes": "any",
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ouvrir le planning",
+      "short_name": "Planning",
+      "description": "Ouvrir la vue annuelle du quota client.",
+      "url": "./#calendar-title",
+      "icons": [
+        {
+          "src": "./assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./assets/screenshots/monquota-wide.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vue large de la calculette quota annuel"
+    },
+    {
+      "src": "./assets/screenshots/monquota-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vue mobile de la calculette quota annuel"
     }
   ]
 }

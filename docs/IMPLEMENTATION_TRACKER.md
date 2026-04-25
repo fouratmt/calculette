@@ -11,7 +11,7 @@ This file tracks the current implementation status against the product plan in `
 - Initial summary rendering no longer waits for the full 12-month calendar DOM; the calendar and manifest registration are deferred until after first paint.
 - Calendar day clicks use one delegated handler, and selection-only changes update the editor and tile selection state without rebuilding the whole year.
 - JSON export/import, current-year reset, and full local-session clearing are implemented.
-- Public-launch assets are present: production metadata, favicon, manifest, PNG/SVG social card, `robots.txt`, `sitemap.xml`, `404.html`, and a privacy page.
+- Public-launch assets are present: production metadata, polished PWA icons, maskable install icons, manifest screenshots, a service worker, PNG/SVG social card, `robots.txt`, `sitemap.xml`, `404.html`, and a privacy page.
 - GitHub Pages deployment support is present through static-compatible files, `.nojekyll`, and the root `CNAME` for `monquota.fr`; no additional Actions work is needed in this app.
 - The launch checklist now tracks each go-live recommendation as implemented, already configured, or host-dependent.
 - The remaining go-live checks are production smoke testing and social preview rendering.
@@ -53,7 +53,8 @@ This file tracks the current implementation status against the product plan in `
 | Mobile-friendly layout | Implemented | The CSS adapts the layout for narrower screens. |
 | Accessibility labels for day tiles | Implemented | Calendar buttons now expose full date, status, selection, today, and editability to assistive tech. |
 | Lightweight calculation and storage tests | Implemented | `just check` now runs syntax validation plus Node unit tests. |
-| Public launch metadata and static assets | Implemented | The app shell now includes manifest, favicon, production social metadata, social card assets, robots configuration, and a sitemap. |
+| Public launch metadata and static assets | Implemented | The app shell now includes deferred manifest registration, favicon, square install icons, manifest screenshots, production social metadata, social card assets, robots configuration, and a sitemap. |
+| PWA install support | Implemented | The manifest includes app identity, display metadata, mobile theme/background colors, regular and maskable icons, screenshots, and a shortcut; `service-worker.js` caches the static app shell on secure origins. |
 | Privacy page | Implemented | A dedicated static page explains local storage, the absence of a backend, and the absence of analytics/session replay. |
 | GitHub Pages deployment flow | Already configured outside this pass | The app is kept as plain static files for the existing repository Pages flow; no extra Actions workflow is required. |
 | GitHub Pages static serving compatibility | Implemented | `.nojekyll` prevents Jekyll processing and keeps the static file tree served directly. |
