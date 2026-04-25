@@ -38,9 +38,7 @@
       parts.push("prévu");
     }
 
-    if (options.isSelected) {
-      parts.push("sélectionné");
-    }
+    parts.push(options.isSelected ? "sélectionné" : "non sélectionné");
 
     if (options.isToday) {
       parts.push("aujourd'hui");
