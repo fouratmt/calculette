@@ -1,0 +1,19 @@
+{
+  "name": "Calculette quota annuel",
+  "short_name": "Quota annuel",
+  "description": "Planifiez vos jours travaillés, congés, demi-journées et fermetures sur une année complète avec un calendrier 100 % local.",
+  "lang": "fr-FR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4eee4",
+  "theme_color": "#f4eee4",
+  "icons": [
+    {
+      "src": "./favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

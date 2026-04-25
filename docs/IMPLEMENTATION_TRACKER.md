@@ -9,7 +9,8 @@ This file tracks the current implementation status against the product plan in `
 - Per-year data is isolated in storage, so changing or resetting one year no longer mutates another year's overrides.
 - Single-day editing, desktop shift-click range selection, mobile touch-range selection, and keyboard shortcuts are implemented.
 - JSON export/import, current-year reset, and full local-session clearing are implemented.
-- The main functional gap is heuristic depth: status labels still rely on fixed thresholds rather than recent-pace comparison.
+- Public-launch assets are present: metadata, favicon, manifest, social card, `robots.txt`, and a privacy/publication page.
+- Lightweight Node regression tests cover storage normalization and core calculation rules.
 
 ## Plan Coverage
 
@@ -29,7 +30,6 @@ This file tracks the current implementation status against the product plan in `
 | Summary headline metrics | Implemented | The UI shows target, worked total, non-worked total, remaining target, and status. |
 | Feasibility helper copy | Implemented | Helper text uses recoverable and reducible capacity calculations. |
 | Fixed status-threshold heuristic | Implemented | Status labels map from fixed utilization thresholds. |
-| Recent-pace-aware status heuristic | Not implemented | The current status logic does not compare with recent actual performance. |
 | Full-year calendar rendering | Implemented | All 12 months render with Monday-first grids, monthly summaries, and a small patch-style marker for today's date. |
 | Visual distinction between statuses | Implemented | Worked, half-day, non-worked, company-closed, holiday, and weekend have separate styles. |
 | Single-day editing | Implemented | Clicking an editable day opens immediate status actions for that selection. |
@@ -44,10 +44,7 @@ This file tracks the current implementation status against the product plan in `
 | Current-year reset | Implemented | The session panel can rebuild the selected year from defaults. |
 | Full local-session clear | Implemented | Stored local state can be removed and recreated from scratch. |
 | Mobile-friendly layout | Implemented | The CSS adapts the layout for narrower screens. |
-| Dynamic year support beyond `2028` | Not implemented | Supported years are still hard-coded. |
-
-## Still To Do
-
-1. Improve status guidance if the product should compare feasibility against recent real pace instead of fixed percentage bands.
-2. Decide whether the fixed year range is still acceptable or whether the app should support arbitrary nearby years.
-3. Decide whether bulk editing needs to go beyond the current click, shift-click, touch-drag, and shortcut workflow.
+| Accessibility labels for day tiles | Implemented | Calendar buttons now expose full date, status, selection, today, and editability to assistive tech. |
+| Lightweight calculation and storage tests | Implemented | `just check` now runs syntax validation plus Node unit tests. |
+| Public launch metadata and static assets | Implemented | The app shell now includes manifest, favicon, social card, and robots configuration. |
+| Privacy and publication page | Implemented | A dedicated static page explains local storage and highlights the remaining legal details to complete before launch. |

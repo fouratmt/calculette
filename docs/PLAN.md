@@ -15,6 +15,7 @@ Current scope:
 - a calendar used to subtract or adjust days with explicit overrides
 - direct execution from `index.html` without a build step
 - local backup and restore through JSON export and import
+- public-ready static metadata and assets for hosted deployment
 
 ### Primary Outcome
 
@@ -32,6 +33,7 @@ The app should let the user see, at a glance, whether the current yearly plan hi
 - all data stored locally
 - direct browser usage from disk
 - mobile-friendly behavior
+- clear behavior when moving between a local file, preview URL, and production domain
 
 ## 3. Current Product Rules
 
@@ -218,6 +220,8 @@ The stored state contains:
 - per-year planning buckets under `years`
 
 Only explicit overrides are persisted for individual days inside each yearly bucket.
+
+When the app is hosted online, browser storage remains scoped to the exact site origin. Export and import are therefore the migration path between a local copy, a preview URL, and the final production domain.
 
 ### Example Structure
 

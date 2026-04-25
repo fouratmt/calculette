@@ -17,9 +17,14 @@ run-uvx host="127.0.0.1" port="4173":
 
 check:
   @echo "Checking browser scripts with Node"
-  @rg --files -g '*.js' src | while IFS= read -r file; do \
+  @rg --files -g '*.js' src tests | while IFS= read -r file; do \
     node --check "$file"; \
   done
+  @just test
+
+test:
+  @echo "Running lightweight unit tests"
+  @node --test tests/*.test.js
 
 doctor:
   @just --version

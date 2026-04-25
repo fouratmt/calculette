@@ -3,6 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Planifiez vos jours travaillés, congés, demi-journées et fermetures sur une année complète avec un calendrier 100 % local."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#f4eee4" />
+    <meta name="application-name" content="Calculette quota annuel" />
+    <meta name="apple-mobile-web-app-title" content="Quota annuel" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="color-scheme" content="light" />
+    <link rel="canonical" href="./" />
+    <link rel="icon" href="./favicon.png" type="image/png" />
+    <link rel="manifest" href="./site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Calculette quota annuel" />
+    <meta property="og:title" content="Calculette quota annuel" />
+    <meta
+      property="og:description"
+      content="Suivez votre quota client et ajustez vos jours travaillés, congés et demi-journées sur une année complète."
+    />
+    <meta property="og:url" content="./" />
+    <meta property="og:image" content="./social-card.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta
+      property="og:image:alt"
+      content="Illustration de la calculette quota annuel avec calendrier et synthèse annuelle."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Calculette quota annuel" />
+    <meta
+      name="twitter:description"
+      content="Suivez votre quota client et ajustez vos jours travaillés, congés et demi-journées sur une année complète."
+    />
+    <meta name="twitter:image" content="./social-card.svg" />
     <title>Calculette quota annuel</title>
     <link rel="stylesheet" href="./src/styles/main.css" />
   </head>
@@ -62,7 +97,7 @@
           <form id="settings-form" class="settings-grid">
             <label class="field">
               <span>Année</span>
-              <select id="year-input" name="year">
+              <select id="year-input" name="year" aria-label="Année">
                 <option value="2025">2025</option>
                 <option value="2026">2026</option>
                 <option value="2027">2027</option>
@@ -137,7 +172,7 @@
             </article>
           </div>
 
-          <p id="pace-copy" class="summary-copy"></p>
+          <p id="pace-copy" class="summary-copy" aria-live="polite"></p>
         </section>
 
         <section class="panel calendar-panel" aria-labelledby="calendar-title">
@@ -233,8 +268,15 @@
             </div>
           </div>
 
-          <p id="session-feedback" class="session-feedback">
-            Les données restent dans ce navigateur tant que vous ne videz pas la session.
+          <p
+            id="session-feedback"
+            class="session-feedback"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            Les données restent dans ce navigateur et sur cette adresse tant que vous
+            ne videz pas la session.
           </p>
         </section>
       </main>
@@ -257,7 +299,12 @@
             Les calculs et la session restent dans ce navigateur. Vous pouvez
             exporter vos données en JSON à tout moment.
           </p>
-          <!-- <p class="app-footer-meta">Périmètre actuel : années 2025, 2026, 2027 et 2028.</p> -->
+          <p class="app-footer-meta">
+            En ligne, les données restent liées à ce navigateur et à cette adresse.
+            Si vous changez de domaine, de navigateur ou d'appareil, exportez puis
+            réimportez votre JSON.
+            <a href="./confidentialite.html">Confidentialité et informations du site</a>
+          </p>
         </div>
       </footer>
     </div>

@@ -1016,7 +1016,7 @@
 
     if (!elements.sessionFeedback.textContent.trim()) {
       setSessionFeedback(
-        "Les données restent dans ce navigateur tant que vous ne videz pas la session.",
+        "Les données restent dans ce navigateur et sur cette adresse. Si vous changez de domaine, de navigateur ou d'appareil, exportez puis réimportez votre JSON.",
         "neutral",
       );
     }

@@ -51,6 +51,22 @@ select {
   font: inherit;
 }
 
+a {
+  color: var(--accent-deep);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 3px solid rgba(15, 127, 103, 0.28);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 .page-shell {
   width: min(1400px, calc(100% - 2rem));
   margin: 0 auto;
@@ -262,6 +278,14 @@ select {
   line-height: 1.5;
 }
 
+.section-copy-wide {
+  max-width: 48rem;
+}
+
+.section-copy-wide + .section-copy-wide {
+  margin-top: 0.9rem;
+}
+
 .settings-grid,
 .summary-grid {
   display: grid;
@@ -298,6 +322,19 @@ select {
   outline: none;
   border-color: rgba(15, 127, 103, 0.55);
   box-shadow: 0 0 0 4px rgba(15, 127, 103, 0.12);
+}
+
+.field input:focus-visible,
+.field select:focus-visible,
+.day-action-button:focus-visible,
+.session-button:focus-visible,
+.day-tile:focus-visible,
+.scroll-to-top-button:focus-visible {
+  outline: none;
+  border-color: rgba(15, 127, 103, 0.7);
+  box-shadow:
+    0 0 0 4px rgba(15, 127, 103, 0.18),
+    0 10px 24px rgba(26, 32, 40, 0.1);
 }
 
 .summary-grid {

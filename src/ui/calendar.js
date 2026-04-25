@@ -13,9 +13,44 @@
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   });
+  const a11yDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   function formatNumber(value) {
     return numberFormatter.format(value);
+  }
+
+  function buildDayAriaLabel(date, record, meta, options) {
+    const parts = [
+      a11yDateFormatter.format(date),
+      `statut ${record.holidayName || meta.label}`,
+    ];
+
+    if (record.holidayName && record.holidayName !== meta.label) {
+      parts.push(meta.label);
+    }
+
+    if (options.isPlanned) {
+      parts.push("prévu");
+    }
+
+    if (options.isSelected) {
+      parts.push("sélectionné");
+    }
+
+    if (options.isToday) {
+      parts.push("aujourd'hui");
+    }
+
+    if (!options.isEditable) {
+      parts.push("non modifiable");
+    }
+
+    return parts.join(", ");
   }
 
   function renderCalendar(rootElement, state, snapshot, options) {
@@ -56,11 +91,13 @@
 
       const monthGrid = document.createElement("div");
       monthGrid.className = "month-grid";
+      monthGrid.setAttribute("aria-label", `Mois de ${MONTH_NAMES[monthIndex]}`);
 
       for (const weekdayLabel of WEEKDAY_LABELS) {
         const label = document.createElement("div");
         label.className = "weekday-label";
         label.textContent = weekdayLabel;
+        label.setAttribute("aria-hidden", "true");
         monthGrid.append(label);
       }
 
@@ -86,39 +123,57 @@
         dayTile.dataset.source = record.source;
         dayTile.dataset.isoDate = isoDate;
         dayTile.title = record.holidayName || meta.label;
+        const isToday = isSameCalendarDay(date, effectiveToday);
+        const isSelected = selectedDayIsoSet.has(isoDate);
+        const isPlanned = record.status === "worked_full" && date > planningToday;
+        const isEditable = !editableDayIsoSet || editableDayIsoSet.has(isoDate);
 
-        if (isSameCalendarDay(date, effectiveToday)) {
+        if (isToday) {
           dayTile.classList.add("is-today");
+          dayTile.setAttribute("aria-current", "date");
         }
 
-        if (selectedDayIsoSet.has(isoDate)) {
+        if (isSelected) {
           dayTile.classList.add("is-selected");
         }
+        dayTile.setAttribute("aria-pressed", isSelected ? "true" : "false");
 
-        if (record.status === "worked_full" && date > planningToday) {
+        if (isPlanned) {
           dayTile.classList.add("is-planned");
           dayTile.title = `${record.holidayName || meta.label} prévu`;
         }
 
-        const isEditable = !editableDayIsoSet || editableDayIsoSet.has(isoDate);
         if (!isEditable) {
           dayTile.classList.add("is-locked");
           dayTile.disabled = true;
           dayTile.title = `${record.holidayName || meta.label} - non modifiable`;
+          dayTile.setAttribute("aria-disabled", "true");
         }
+        dayTile.setAttribute(
+          "aria-label",
+          buildDayAriaLabel(date, record, meta, {
+            isEditable,
+            isPlanned,
+            isSelected,
+            isToday,
+          }),
+        );
 
         const dayNumber = document.createElement("span");
         dayNumber.className = "day-number";
         dayNumber.textContent = String(date.getDate());
+        dayNumber.setAttribute("aria-hidden", "true");
 
         const dayMeta = document.createElement("span");
         dayMeta.className = "day-meta";
         dayMeta.textContent = record.holidayShortLabel || meta.shortLabel || "";
+        dayMeta.setAttribute("aria-hidden", "true");
 
-        if (isSameCalendarDay(date, effectiveToday)) {
+        if (isToday) {
           const todayBadge = document.createElement("span");
           todayBadge.className = "day-badge day-badge-today";
-          todayBadge.textContent = "today";
+          todayBadge.textContent = "auj.";
+          todayBadge.setAttribute("aria-hidden", "true");
           dayTile.append(todayBadge);
         }
 
