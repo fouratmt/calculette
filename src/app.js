@@ -63,6 +63,9 @@
     },
   };
   let lastKnownMobileMode = isMobileMode();
+  let latestSnapshot = null;
+  let hasRenderedCalendar = false;
+  let calendarRenderRequestId = 0;
 
   const elements = {
     settingsForm: document.querySelector("#settings-form"),
@@ -481,7 +484,7 @@
       uiState.selectedDayIsos[0] === selectionEvent.isoDate
     ) {
       clearSelection();
-      render();
+      renderSelectionState(snapshot);
       return;
     }
 
@@ -491,7 +494,23 @@
       selectSingleDay(selectionEvent.isoDate, snapshot);
     }
 
-    render();
+    renderSelectionState(snapshot);
+  }
+
+  function handleCalendarClick(event) {
+    const dayTile = getInteractiveDayTile(event.target);
+    if (!dayTile) {
+      return;
+    }
+
+    handleDaySelection(
+      {
+        isoDate: dayTile.dataset.isoDate,
+        extendSelection: event.shiftKey,
+        inputType: "click",
+      },
+      latestSnapshot || buildYearSnapshot(buildPlanningState()),
+    );
   }
 
   function getInteractiveDayTile(target) {
@@ -525,7 +544,16 @@
     const dayTiles = elements.calendarRoot.querySelectorAll(".day-tile[data-iso-date]");
 
     for (const dayTile of dayTiles) {
-      dayTile.classList.toggle("is-selected", selectedDayIsoSet.has(dayTile.dataset.isoDate));
+      const isSelected = selectedDayIsoSet.has(dayTile.dataset.isoDate);
+      dayTile.classList.toggle("is-selected", isSelected);
+      dayTile.setAttribute("aria-pressed", isSelected ? "true" : "false");
+    }
+  }
+
+  function removeMobileDayPopover() {
+    const popover = elements.calendarRoot.querySelector(".mobile-day-popover");
+    if (popover) {
+      popover.remove();
     }
   }
 
@@ -586,7 +614,7 @@
         extendSelection: false,
         inputType: "pointer",
       },
-      buildYearSnapshot(buildPlanningState()),
+      latestSnapshot || buildYearSnapshot(buildPlanningState()),
     );
   }
 
@@ -617,7 +645,7 @@
         extendSelection: true,
         inputType: "pointer",
       },
-      buildYearSnapshot(buildPlanningState()),
+      latestSnapshot || buildYearSnapshot(buildPlanningState()),
     );
   }
 
@@ -669,7 +697,7 @@
       clearSelection();
     }
 
-    render();
+    renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
   }
 
   function handleCalendarTouchStart(event) {
@@ -743,7 +771,7 @@
 
     uiState.mobileGesture.lastTouchedIso = dayTile.dataset.isoDate;
     uiState.mobileGesture.didExtendSelection = true;
-    const snapshot = buildYearSnapshot(buildPlanningState());
+    const snapshot = latestSnapshot || buildYearSnapshot(buildPlanningState());
 
     selectSingleDay(uiState.mobileGesture.startIso, snapshot);
     selectDayRange(dayTile.dataset.isoDate, snapshot);
@@ -774,21 +802,21 @@
     }
 
     if (event.type === "touchcancel") {
-      render();
+      renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
       return;
     }
 
     if (shouldToggleSelectedDayOff) {
       clearSelection();
-      render();
+      renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
       return;
     }
 
     if (!uiState.selectedDayIsos.length || !uiState.selectedDayIsos.includes(startIso)) {
-      selectSingleDay(startIso, buildYearSnapshot(buildPlanningState()));
+      selectSingleDay(startIso, latestSnapshot || buildYearSnapshot(buildPlanningState()));
     }
 
-    render();
+    renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
   }
 
   function isSelectionInteractionTarget(target) {
@@ -819,7 +847,7 @@
     }
 
     clearSelection();
-    render();
+    renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
   }
 
   function getSelectedDayBounds() {
@@ -873,11 +901,22 @@
     });
   }
 
+  function registerManifestLink() {
+    if (document.querySelector('link[rel="manifest"]')) {
+      return;
+    }
+
+    const manifestLink = document.createElement("link");
+    manifestLink.rel = "manifest";
+    manifestLink.href = "./site.webmanifest";
+    document.head.append(manifestLink);
+  }
+
   function handleKeyboardShortcuts(event) {
     if (event.key === "Escape" && uiState.selectedDayIsos.length) {
       event.preventDefault();
       clearSelection();
-      render();
+      renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
       return;
     }
 
@@ -909,7 +948,10 @@
     }
 
     event.preventDefault();
-    applyActionToSelection(matchedAction, buildYearSnapshot(buildPlanningState()));
+    applyActionToSelection(
+      matchedAction,
+      latestSnapshot || buildYearSnapshot(buildPlanningState()),
+    );
   }
 
   function buildPaceCopy(snapshot) {
@@ -1231,25 +1273,85 @@
     popover.dataset.placement = placeAbove ? "above" : "below";
   }
 
-  function render() {
+  function runAfterFirstPaint(callback) {
+    const scheduleIdle =
+      typeof global.requestIdleCallback === "function"
+        ? function scheduleIdleCallback() {
+            global.requestIdleCallback(callback, { timeout: 800 });
+          }
+        : callback;
+
+    if (typeof global.requestAnimationFrame !== "function") {
+      global.setTimeout(callback, 0);
+      return;
+    }
+
+    global.requestAnimationFrame(function waitForPaint() {
+      global.requestAnimationFrame(scheduleIdle);
+    });
+  }
+
+  function renderCalendarView(snapshot, editableDayIsoSet) {
+    renderCalendar(elements.calendarRoot, state, snapshot, {
+      editableDayIsoSet,
+      selectedDayIsos: uiState.selectedDayIsos,
+    });
+    hasRenderedCalendar = true;
+  }
+
+  function renderSelectionState(snapshot) {
+    if (!snapshot) {
+      return;
+    }
+
+    latestSnapshot = snapshot;
+    renderDayEditor(snapshot);
+
+    if (!hasRenderedCalendar) {
+      return;
+    }
+
+    syncCalendarSelectionPreview();
+    removeMobileDayPopover();
+    renderMobileDayPopover(snapshot);
+  }
+
+  function scheduleCalendarRender(snapshot, editableDayIsoSet) {
+    const requestId = calendarRenderRequestId + 1;
+    calendarRenderRequestId = requestId;
+
+    runAfterFirstPaint(function renderDeferredCalendar() {
+      if (requestId !== calendarRenderRequestId) {
+        return;
+      }
+
+      renderCalendarView(snapshot, editableDayIsoSet);
+      renderMobileDayPopover(snapshot);
+    });
+  }
+
+  function render(options) {
+    const settings = options || {};
     const planningState = buildPlanningState();
     const snapshot = buildYearSnapshot(planningState);
     const editableDayIsoSet = getEditableDayIsoSet(snapshot);
 
+    latestSnapshot = snapshot;
     sanitizeSelection(editableDayIsoSet);
     syncInputs();
     renderSummary(snapshot);
     renderSessionInfo();
     renderDayEditor(snapshot);
-    renderCalendar(elements.calendarRoot, state, snapshot, {
-      editableDayIsoSet,
-      selectedDayIsos: uiState.selectedDayIsos,
-      onDaySelect: function onDaySelect(selectionEvent) {
-        handleDaySelection(selectionEvent, snapshot);
-      },
-    });
+    removeMobileDayPopover();
+
+    if (settings.deferCalendar && !hasRenderedCalendar) {
+      scheduleCalendarRender(snapshot, editableDayIsoSet);
+      return;
+    }
+
+    calendarRenderRequestId += 1;
+    renderCalendarView(snapshot, editableDayIsoSet);
     renderMobileDayPopover(snapshot);
-    updateScrollToTopButtonVisibility();
   }
 
   function updateStateFromInputs(event) {
@@ -1287,7 +1389,7 @@
     }
 
     clearSelection();
-    render();
+    renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
   }
 
   function handleViewportChange() {
@@ -1296,8 +1398,9 @@
     lastKnownMobileMode = nextMobileMode;
 
     if (modeChanged || (nextMobileMode && uiState.selectedDayIsos.length)) {
-      render();
+      renderSelectionState(latestSnapshot || buildYearSnapshot(buildPlanningState()));
     }
+    updateScrollToTopButtonVisibility();
   }
 
   elements.settingsForm.addEventListener("change", updateStateFromInputs);
@@ -1309,6 +1412,7 @@
   elements.resetYearButton.addEventListener("click", handleYearReset);
   elements.clearSessionButton.addEventListener("click", handleSessionClear);
   elements.scrollToTopButton.addEventListener("click", scrollToTop);
+  elements.calendarRoot.addEventListener("click", handleCalendarClick);
   elements.calendarRoot.addEventListener("pointerdown", handleCalendarPointerDown);
   elements.calendarRoot.addEventListener("pointermove", handleCalendarPointerMove);
   elements.calendarRoot.addEventListener("pointerup", finishCalendarPointerGesture);
@@ -1344,5 +1448,6 @@
     mobileViewportQuery.addListener(handleViewportChange);
   }
 
-  render();
+  render({ deferCalendar: true });
+  runAfterFirstPaint(registerManifestLink);
 })(window);

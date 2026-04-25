@@ -8,6 +8,8 @@ This file tracks the current implementation status against the product plan in `
 - Normal legal weekdays default to `worked_full`, pure weekends are locked, and generated French holidays take visual precedence when they overlap weekends, which keeps those dates editable as holidays.
 - Per-year data is isolated in storage, so changing or resetting one year no longer mutates another year's overrides.
 - Single-day editing, desktop shift-click range selection, mobile touch-range selection, and keyboard shortcuts are implemented.
+- Initial summary rendering no longer waits for the full 12-month calendar DOM; the calendar and manifest registration are deferred until after first paint.
+- Calendar day clicks use one delegated handler, and selection-only changes update the editor and tile selection state without rebuilding the whole year.
 - JSON export/import, current-year reset, and full local-session clearing are implemented.
 - Public-launch assets are present: production metadata, favicon, manifest, PNG/SVG social card, `robots.txt`, `sitemap.xml`, `404.html`, and a privacy page.
 - GitHub Pages deployment support is present through static-compatible files, `.nojekyll`, and the root `CNAME` for `monquota.fr`; no additional Actions work is needed in this app.
@@ -34,11 +36,13 @@ This file tracks the current implementation status against the product plan in `
 | Feasibility helper copy | Implemented | Helper text uses recoverable and reducible capacity calculations. |
 | Fixed status-threshold heuristic | Implemented | Status labels map from fixed utilization thresholds. |
 | Full-year calendar rendering | Implemented | All 12 months render with Monday-first grids, monthly summaries, and a small patch-style marker for today's date. |
+| Initial-load performance | Implemented | The summary renders first; the below-the-fold calendar and manifest registration are scheduled after first paint. |
 | Visual distinction between statuses | Implemented | Worked, half-day, non-worked, company-closed, holiday, and weekend have separate styles. |
 | Single-day editing | Implemented | Clicking an editable day opens immediate status actions for that selection. |
 | Range editing | Implemented | Shift-click selects an editable date range, skipping pure weekend tiles while still allowing holiday-weekend dates because they resolve to holidays. |
 | Mobile drag range editing | Implemented | On narrow screens, tapping a day and dragging over others extends the current editable range. |
 | Selection reset by repeat tap or away click | Implemented | Repeating a tap on the same editable day or on an already selected mobile range clears the selection, and clicks or taps away from day tiles and action controls also clear it. |
+| Selection render performance | Implemented | Selecting, extending, or clearing a selection updates the editor, popover, and tile pressed state without reconstructing the calendar DOM. |
 | Keyboard shortcuts | Implemented | `T`, `D`, `C`, `F`, `J`, `R`, and `Escape` are wired globally. |
 | Reset to default | Implemented | Reset removes the override and falls back to the derived default for the date. |
 | Mobile inline action popover | Implemented | On narrow screens, selected days can be edited from a popover whose pointer follows the selected day or selected range in the calendar. |

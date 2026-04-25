@@ -62,6 +62,8 @@ Small static browser app for planning worked days over a selected year.
 - Generated holidays take precedence over weekend rendering, so a holiday that falls on a weekend is shown and edited as a holiday.
 - Local storage isolates targets and overrides per selected year across `2025` to `2028`.
 - When the app is hosted online, local storage remains scoped to the exact site address, so JSON export/import is the migration path between origins.
+- The first load renders the summary immediately, then defers the full-year calendar and manifest registration until after the first paint to keep the hero responsive.
+- Calendar clicks are delegated from the root, and selection-only changes update the highlighted tiles and editor without rebuilding the 12-month DOM.
 - `src/core` holds business rules and summary calculations.
 - `src/data` holds persistence and holiday data sources.
 - `src/lib` holds generic date helpers.

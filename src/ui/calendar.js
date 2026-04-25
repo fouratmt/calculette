@@ -19,14 +19,27 @@
     month: "long",
     year: "numeric",
   });
+  const a11yDateLabelByIso = new Map();
 
   function formatNumber(value) {
     return numberFormatter.format(value);
   }
 
+  function formatA11yDate(date) {
+    const isoDate = toIsoDate(date);
+    const cachedLabel = a11yDateLabelByIso.get(isoDate);
+    if (cachedLabel) {
+      return cachedLabel;
+    }
+
+    const dateLabel = a11yDateFormatter.format(date);
+    a11yDateLabelByIso.set(isoDate, dateLabel);
+    return dateLabel;
+  }
+
   function buildDayAriaLabel(date, record, meta, options) {
     const parts = [
-      a11yDateFormatter.format(date),
+      formatA11yDate(date),
       `statut ${record.holidayName || meta.label}`,
     ];
 
@@ -57,7 +70,6 @@
     const planningToday = settings.todayReference || startOfToday();
     const selectedDayIsoSet = new Set(settings.selectedDayIsos || []);
     const editableDayIsoSet = settings.editableDayIsoSet || null;
-    const onDaySelect = settings.onDaySelect || function noop() {};
     const calendarGrid = document.createElement("div");
     calendarGrid.className = "calendar-grid";
 
@@ -176,15 +188,6 @@
         }
 
         dayTile.append(dayNumber, dayMeta);
-        if (isEditable) {
-          dayTile.addEventListener("click", function handleClick(event) {
-            onDaySelect({
-              isoDate,
-              extendSelection: event.shiftKey,
-              inputType: "click",
-            });
-          });
-        }
         monthGrid.append(dayTile);
       }
 

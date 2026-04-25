@@ -35,6 +35,7 @@ The app should let the user see, at a glance, whether the current yearly plan hi
 - direct browser usage from disk
 - mobile-friendly behavior
 - clear behavior when moving between a local file, preview URL, and production domain
+- initial paint should not wait for nonessential below-the-fold work
 
 ## 3. Current Product Rules
 
@@ -161,6 +162,7 @@ Current calendar behavior:
 - today's date gets a small patch-style visual cue
 - future default-worked days visually marked as planned
 - pure weekend tiles visible but not editable, while weekend holidays render as holidays and stay editable
+- the full-year calendar can be rendered after first paint, as long as summary data and subsequent day interactions stay consistent
 
 ### Day Interaction
 
@@ -175,6 +177,7 @@ The current interaction model is:
 - click or tap the same day again to clear the current selection
 - on mobile, tapping any day inside the current selected range again clears the current selection
 - click or tap anywhere away from day tiles and action controls to clear the current selection
+- selection changes only need to refresh selection highlighting, the editor, and the mobile popover; status changes still recalculate the summary and calendar immediately
 
 On mobile, once the user has scrolled down the yearly view, a floating button can jump back to the top quickly.
 

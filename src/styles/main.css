@@ -249,6 +249,13 @@ a:focus-visible {
   gap: 1.25rem;
 }
 
+.calendar-panel,
+.session-panel,
+.app-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 48rem;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--panel-border);
