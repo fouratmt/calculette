@@ -102,9 +102,10 @@ just test
 
 - Launch guidance lives in `docs/DEPLOYMENT_CHECKLIST.md`.
 - The app is ready for the existing GitHub Pages flow; no additional GitHub Actions workflow is required.
-- The root `CNAME` file contains `monquota.fr`; configure or verify DNS for GitHub Pages.
-- After GitHub verifies the custom domain, enable Enforce HTTPS.
+- The root `CNAME` file contains `monquota.fr`; DNS and GitHub Pages custom-domain verification are done.
+- Enforce HTTPS is enabled.
 - Canonical/Open Graph/Twitter URLs point to `https://monquota.fr/`.
 - `sitemap.xml` and `robots.txt` use absolute production URLs.
 - Social preview metadata points to the production PNG social card.
+- Still pending after deployment: production smoke test and social preview rendering check.
 - GitHub Pages manages response headers and cache policy for plain static hosting; use a proxy/CDN only if custom headers or cache rules become mandatory.

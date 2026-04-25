@@ -12,7 +12,7 @@ This file tracks the current implementation status against the product plan in `
 - Public-launch assets are present: production metadata, favicon, manifest, PNG/SVG social card, `robots.txt`, `sitemap.xml`, `404.html`, and a privacy page.
 - GitHub Pages deployment support is present through static-compatible files, `.nojekyll`, and the root `CNAME` for `monquota.fr`; no additional Actions work is needed in this app.
 - The launch checklist now tracks each go-live recommendation as implemented, already configured, or host-dependent.
-- The remaining go-live gaps are host-side DNS, GitHub Pages custom-domain verification, and Enforce HTTPS.
+- The remaining go-live checks are production smoke testing and social preview rendering.
 - Lightweight Node regression tests cover storage normalization and core calculation rules.
 
 ## Plan Coverage
@@ -56,6 +56,8 @@ This file tracks the current implementation status against the product plan in `
 | Custom 404 page | Implemented | `404.html` provides a static GitHub Pages 404 response page. |
 | Production-domain metadata | Implemented | Canonical, Open Graph, and Twitter metadata point to `https://monquota.fr/` and the production PNG social card. |
 | Search indexing support | Implemented | Crawling is allowed through `robots.txt`, and `sitemap.xml` lists absolute production URLs. |
-| GitHub Pages custom domain | Implemented in repo | The root `CNAME` file contains `monquota.fr`; DNS and GitHub verification remain host-side checks. |
-| GitHub Pages HTTPS and redirects | GitHub Pages setting | HTTPS and HTTP-to-HTTPS redirects are configured in GitHub Pages settings after DNS verification. |
+| GitHub Pages custom domain | Done | The root `CNAME` file contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. |
+| GitHub Pages HTTPS | Done | Enforce HTTPS is enabled after DNS and custom-domain verification. |
+| Production smoke test | Not yet verified | Confirm homepage `200`, unknown routes show `404.html`, and `http://` redirects to `https://` on production. |
+| Social preview rendering | Not yet verified | Check that link previews render `https://monquota.fr/social-card.png` correctly after deployment. |
 | Security headers and cache policy | GitHub Pages managed | Plain GitHub Pages does not support repo-defined custom headers or cache rules; use a proxy/CDN only if those become hard requirements. |

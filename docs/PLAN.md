@@ -264,6 +264,62 @@ Legacy override values are migrated on load to the canonical status keys, older 
 
 The main follow-up items still to decide or implement are:
 
-1. Revisit the status heuristic if labels should depend on recent actual pace instead of fixed thresholds only.
-2. Decide whether year support should remain fixed to `2025`-`2028` or become dynamic.
-3. Improve bulk-editing speed beyond the current selection panel and single-key shortcuts.
+### Status Heuristic
+
+Current behavior is intentionally simple: status labels are derived from the yearly total and the remaining adjustable capacity, using fixed thresholds such as `Limite` above `90 %`, `À ajuster` above `75 %`, and `Faisable` above `55 %`.
+
+This is enough for annual planning, but it does not consider when in the year the user is. For example, being at `80 %` of the target in March and being at `80 %` in November are very different operational situations. A future version could add a pace-aware status that compares the current worked total with an expected year-to-date trajectory.
+
+Questions to answer before changing it:
+
+- Should the app distinguish actual past days from future planned days, or keep treating the whole year as one planning snapshot?
+- Should pace be based on calendar date, legal workdays elapsed, or manually marked completed days?
+- Should the current fixed feasibility labels remain visible, with pace as a secondary warning?
+- What should happen before the selected year starts or after it ends?
+
+Conservative implementation direction:
+
+- Keep the existing fixed-threshold status as the primary rule.
+- Add a secondary pace helper only when the selected year is the current year.
+- Use generated holidays and weekends when calculating elapsed legal workdays.
+- Avoid persisting derived pace data; compute it from the selected year and the current date.
+
+### Year Range
+
+Current behavior supports only `2025`, `2026`, `2027`, and `2028`. This is deliberate: the selector is predictable, stored state is bounded, and holiday generation is only exercised for a small known range.
+
+A dynamic year range would reduce maintenance because the app would not need a code change when `2029` becomes relevant. It would also make the app feel less temporary once hosted publicly.
+
+Questions to answer before changing it:
+
+- Should users be able to create any future year, or only a rolling range such as current year minus one through current year plus three?
+- Should old years remain visible forever once they contain overrides?
+- Should JSON import accept years outside the visible selector?
+- How should invalid or very old legacy years be handled during state sanitization?
+
+Conservative implementation direction:
+
+- Use a rolling selector, for example from current year minus one to current year plus three.
+- Preserve any imported or previously saved year bucket even if it is outside the default visible range.
+- Keep holiday generation local and deterministic for each selected year.
+- Update tests around state sanitization before broadening accepted years.
+
+### Bulk Editing Speed
+
+Current behavior supports single-day editing, desktop shift-click range selection, mobile drag selection, keyboard shortcuts, and immediate save after applying an action. This is stable and covers the main workflow.
+
+The remaining friction is repetitive editing when the user needs to mark many non-contiguous days, recurring closures, or common vacation blocks. Future improvements should speed up these workflows without making the calendar harder to understand.
+
+Candidate improvements:
+
+- Add preset range actions such as "mark weekdays in selected range as congé" while still excluding pure weekends.
+- Add month-level quick actions for common cases, such as resetting a month or marking all editable weekdays in a month.
+- Add a small multi-select mode that lets users tap several separate dates before applying one status.
+- Add import-friendly validation feedback for large override sets.
+
+Constraints for any implementation:
+
+- Preserve immediate save and summary refresh after each applied change.
+- Keep pure weekends locked unless they are generated holidays.
+- Continue storing only explicit overrides in `years[year].dayOverrides`.
+- Keep the UI usable from a directly opened `index.html`, without a framework or build step.

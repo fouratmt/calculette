@@ -13,12 +13,13 @@ This app is static and already runnable from `index.html`. The target hosting se
 | Local-only data model | Implemented | Planning data stays in `localStorage`; JSON export/import is available for migration between origins. | Tell users to export/import before moving from preview or local URLs to production. |
 | Metadata | Implemented | Description, robots, theme color, favicon, manifest, canonical URL, Open Graph, and Twitter tags are present. Production URLs point to `https://monquota.fr/`. | Recheck values only if the production domain changes. |
 | Favicon and app manifest | Implemented | `favicon.png` and `site.webmanifest` are present and linked from `index.html`. | Verify the production host serves `.webmanifest` as `application/manifest+json` or a compatible JSON type. |
-| Social sharing image | Implemented | `social-card.png` is production-hosted and referenced by Open Graph/Twitter metadata; `social-card.svg` remains as the editable source. | Test social previews after deployment. |
+| Social sharing image | Implemented | `social-card.png` is production-hosted and referenced by Open Graph/Twitter metadata; `social-card.svg` remains as the editable source. | None. |
 | Search engine access | Implemented | `robots.txt` allows crawling and points to `https://monquota.fr/sitemap.xml`; `sitemap.xml` contains absolute production URLs. | Submit or inspect the sitemap only if search indexing matters. |
-| Custom domain | Implemented in repo | `CNAME` contains `monquota.fr`. | Configure or verify DNS for GitHub Pages in the domain provider and GitHub Pages settings. |
-| HTTPS | GitHub Pages setting | HTTPS cannot be implemented as an app file. GitHub Pages provides HTTPS for Pages sites and custom domains after DNS is valid. | Enable Enforce HTTPS in GitHub Pages settings after the custom domain is configured. |
-| HTTP-to-HTTPS redirect | GitHub Pages setting | This is handled by GitHub Pages when Enforce HTTPS is enabled. | Verify `http://` redirects to `https://` after launch. |
-| 404 page | Implemented | `404.html` is present for GitHub Pages unknown routes. | Verify an unknown production URL returns the custom 404 page. |
+| Custom domain | Done | `CNAME` contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. | None. |
+| HTTPS | Done | Enforce HTTPS is enabled in GitHub Pages after domain verification. | Verify behavior in the production smoke test. |
+| Production smoke test | Not yet verified | The production site should be checked from the public URL after deployment. | Confirm homepage `200`, unknown routes show `404.html`, and `http://` redirects to `https://`. |
+| Social preview rendering | Not yet verified | Metadata points to `https://monquota.fr/social-card.png`. | Check rendering with target social/link preview tools after deployment. |
+| 404 page | Implemented | `404.html` is present for GitHub Pages unknown routes. | Covered by the production smoke test. |
 | Security headers | Not configurable on GitHub Pages | GitHub Pages does not support repository-defined custom response headers for a plain static Pages site. | Use a proxy such as Cloudflare only if custom CSP/security headers become a hard requirement. |
 | Cache policy | GitHub Pages managed | GitHub Pages controls response caching; this repo intentionally avoids long-lived hashed asset assumptions. | After deploy, verify updates appear after a refresh. Move to hashed assets or another host only if cache control becomes a release blocker. |
 | Release checks | Implemented locally | `just check` runs syntax validation and Node unit tests. | Run it before each release, then perform the manual smoke tests below on production. |
@@ -28,10 +29,8 @@ This app is static and already runnable from `index.html`. The target hosting se
 1. Push the repository to GitHub.
 2. Keep the existing repository Pages flow; no additional GitHub Actions workflow is needed for this app.
 3. Confirm the root `CNAME` file contains only `monquota.fr`.
-4. Configure DNS for GitHub Pages:
-   - for an apex domain, use GitHub Pages `A` and `AAAA` records
-   - for a `www` subdomain, use a `CNAME` record pointing to `<owner>.github.io`
-5. After GitHub verifies the domain, enable Enforce HTTPS.
+4. DNS is configured and the custom domain is verified in GitHub Pages settings.
+5. Enforce HTTPS is enabled.
 
 GitHub Pages limitations:
 
@@ -110,4 +109,3 @@ Manual smoke tests:
 3. Verify the session warning text mentions browser-and-address scoped data.
 4. Re-run the smoke test on the real production URL.
 5. Check social previews against the production PNG image URL.
-6. Confirm the custom domain is shown as verified in GitHub Pages settings.
