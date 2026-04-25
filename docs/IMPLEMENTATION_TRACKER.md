@@ -9,7 +9,10 @@ This file tracks the current implementation status against the product plan in `
 - Per-year data is isolated in storage, so changing or resetting one year no longer mutates another year's overrides.
 - Single-day editing, desktop shift-click range selection, mobile touch-range selection, and keyboard shortcuts are implemented.
 - JSON export/import, current-year reset, and full local-session clearing are implemented.
-- Public-launch assets are present: metadata, favicon, manifest, social card, `robots.txt`, and a privacy/publication page.
+- Public-launch assets are present: metadata, favicon, manifest, social card, `robots.txt`, `404.html`, and a privacy page.
+- GitHub Pages deployment support is present through a Pages Actions workflow and `.nojekyll`.
+- The launch checklist now tracks each go-live recommendation as implemented, partially implemented, or host-dependent.
+- The remaining go-live gaps are final custom-domain value, final-domain metadata, optional sitemap, optional PNG social preview, and GitHub Pages settings/DNS verification.
 - Lightweight Node regression tests cover storage normalization and core calculation rules.
 
 ## Plan Coverage
@@ -47,4 +50,12 @@ This file tracks the current implementation status against the product plan in `
 | Accessibility labels for day tiles | Implemented | Calendar buttons now expose full date, status, selection, today, and editability to assistive tech. |
 | Lightweight calculation and storage tests | Implemented | `just check` now runs syntax validation plus Node unit tests. |
 | Public launch metadata and static assets | Implemented | The app shell now includes manifest, favicon, social card, and robots configuration. |
-| Privacy and publication page | Implemented | A dedicated static page explains local storage and highlights the remaining legal details to complete before launch. |
+| Privacy page | Implemented | A dedicated static page explains local storage, the absence of a backend, and the absence of analytics/session replay. |
+| GitHub Pages deployment workflow | Implemented | `.github/workflows/pages.yml` stages only public site files into `_site` and publishes them to GitHub Pages on pushes to `main` and manual dispatches. |
+| GitHub Pages static serving compatibility | Implemented | `.nojekyll` prevents Jekyll processing and keeps the static file tree served directly. |
+| Custom 404 page | Implemented | `404.html` provides a static GitHub Pages 404 response page. |
+| Production-domain metadata | Partially implemented | Canonical, Open Graph, Twitter, and manifest metadata exist, but relative URLs should be replaced with absolute production URLs once the final domain is known. |
+| Search indexing support | Partially implemented | Crawling is allowed through `robots.txt` and page metadata; `sitemap.xml` is still optional and domain-dependent. |
+| GitHub Pages custom domain | Waiting for domain | The repo is ready for a root `CNAME` file, but the final custom domain value is not known yet. |
+| GitHub Pages HTTPS and redirects | GitHub Pages setting | HTTPS and HTTP-to-HTTPS redirects are configured in GitHub Pages settings after DNS verification. |
+| Security headers and cache policy | GitHub Pages managed | Plain GitHub Pages does not support repo-defined custom headers or cache rules; use a proxy/CDN only if those become hard requirements. |

@@ -16,6 +16,7 @@ Current scope:
 - direct execution from `index.html` without a build step
 - local backup and restore through JSON export and import
 - public-ready static metadata and assets for hosted deployment
+- GitHub Pages deployment support for a static custom-domain site
 
 ### Primary Outcome
 
@@ -266,3 +267,4 @@ The main follow-up items still to decide or implement are:
 1. Revisit the status heuristic if labels should depend on recent actual pace instead of fixed thresholds only.
 2. Decide whether year support should remain fixed to `2025`-`2028` or become dynamic.
 3. Improve bulk-editing speed beyond the current selection panel and single-key shortcuts.
+4. Add the final GitHub Pages custom domain to a root `CNAME` file and replace relative social/canonical metadata URLs with absolute production URLs.
