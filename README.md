@@ -8,18 +8,16 @@ Small static browser app for planning worked days over a selected year.
 - No backend
 - Local state stored in `localStorage`
 - French public holidays generated in code
-- Public launch assets included: favicon, web manifest, social card, `robots.txt`, and privacy page
+- Public launch assets included: favicon, web manifest, social card, sitemap, `robots.txt`, `CNAME`, and privacy page
 
 ## Structure
 
 ```text
 .
 ├── .editorconfig
-├── .github/
-│   └── workflows/
-│       └── pages.yml
 ├── .nojekyll
 ├── 404.html
+├── CNAME
 ├── docs/
 │   ├── DEPLOYMENT_CHECKLIST.md
 │   ├── IMPLEMENTATION_TRACKER.md
@@ -29,6 +27,8 @@ Small static browser app for planning worked days over a selected year.
 ├── justfile
 ├── robots.txt
 ├── site.webmanifest
+├── sitemap.xml
+├── social-card.png
 ├── social-card.svg
 ├── src/
 │   ├── app.js
@@ -101,11 +101,10 @@ just test
 ## Launch Notes
 
 - Launch guidance lives in `docs/DEPLOYMENT_CHECKLIST.md`.
-- The app is configured for GitHub Pages through `.github/workflows/pages.yml`.
-- In GitHub repository settings, set Pages source to GitHub Actions.
-- When the custom domain is known, add a root `CNAME` file containing only that domain and configure DNS for GitHub Pages.
+- The app is ready for the existing GitHub Pages flow; no additional GitHub Actions workflow is required.
+- The root `CNAME` file contains `monquota.fr`; configure or verify DNS for GitHub Pages.
 - After GitHub verifies the custom domain, enable Enforce HTTPS.
-- Replace relative canonical/Open Graph/Twitter URLs with absolute production URLs once the final domain is known.
-- If you want search indexing, add a final `sitemap.xml` once the production domain is known.
-- If social previews need broad platform compatibility, publish a PNG social card and point the social metadata to its absolute production URL.
+- Canonical/Open Graph/Twitter URLs point to `https://monquota.fr/`.
+- `sitemap.xml` and `robots.txt` use absolute production URLs.
+- Social preview metadata points to the production PNG social card.
 - GitHub Pages manages response headers and cache policy for plain static hosting; use a proxy/CDN only if custom headers or cache rules become mandatory.
