@@ -62,7 +62,7 @@ This file tracks the current implementation status against the product plan in `
 | GitHub Pages static serving compatibility | Implemented | `.nojekyll` prevents Jekyll processing and keeps the static file tree served directly. |
 | Custom 404 page | Implemented | `404.html` provides a static GitHub Pages 404 response page. |
 | Production-domain metadata | Implemented | Canonical, Open Graph, and Twitter metadata point to `https://monquota.fr/` and the production PNG social card. |
-| Search indexing support | Implemented | Crawling is allowed through `robots.txt`, and `sitemap.xml` lists absolute production URLs. |
+| Search indexing support | Implemented | Crawling is allowed through `robots.txt`, `sitemap.xml` lists absolute production URLs, and the homepage includes the Bing Webmaster validation meta tag. |
 | Search-intent homepage copy | Implemented | The hero metadata and visible hero copy now target French queries around jours-homme, jours travaillés, quota annuel client, consultants, and freelances. |
 | GitHub Pages custom domain | Done | The root `CNAME` file contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. |
 | Cloudflare DNS/CDN | Done outside repo | The production domain is routed through Cloudflare while GitHub Pages remains the static origin. |
