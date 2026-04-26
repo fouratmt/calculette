@@ -14,6 +14,7 @@ This file tracks the current implementation status against the product plan in `
 - Public-launch assets are present: production metadata, polished PWA icons, maskable install icons, manifest screenshots, a service worker, PNG/SVG social card, `robots.txt`, `sitemap.xml`, `404.html`, and a privacy page.
 - The homepage hero now includes crawlable French search-intent copy for jours-homme, jours travaillés, quota annuel client, consultants, and freelances.
 - GitHub Pages deployment support is present through static-compatible files, `.nojekyll`, and the root `CNAME` for `monquota.fr`; no additional Actions work is needed in this app.
+- The production domain is now documented as routed through Cloudflare for DNS/CDN, HTTPS edge handling, security controls, and aggregate traffic analytics.
 - The launch checklist now tracks each go-live recommendation as implemented, already configured, or host-dependent.
 - The remaining go-live checks are production smoke testing and social preview rendering.
 - Lightweight Node regression tests cover storage normalization and core calculation rules.
@@ -56,7 +57,7 @@ This file tracks the current implementation status against the product plan in `
 | Lightweight calculation and storage tests | Implemented | `just check` now runs syntax validation plus Node unit tests. |
 | Public launch metadata and static assets | Implemented | The app shell now includes deferred manifest registration, favicon, square install icons, manifest screenshots, production social metadata, social card assets, robots configuration, and a sitemap. |
 | PWA install support | Implemented | The manifest includes app identity, display metadata, mobile theme/background colors, regular and maskable icons, screenshots, and a shortcut; `service-worker.js` caches the static app shell on secure origins. |
-| Privacy page | Implemented | A dedicated static page explains local storage, the absence of a backend, and the absence of analytics/session replay. |
+| Privacy page | Implemented | A dedicated static page explains local storage, the absence of a business backend, Cloudflare aggregate traffic analytics, and the absence of marketing pixels/session replay. |
 | GitHub Pages deployment flow | Already configured outside this pass | The app is kept as plain static files for the existing repository Pages flow; no extra Actions workflow is required. |
 | GitHub Pages static serving compatibility | Implemented | `.nojekyll` prevents Jekyll processing and keeps the static file tree served directly. |
 | Custom 404 page | Implemented | `404.html` provides a static GitHub Pages 404 response page. |
@@ -64,7 +65,9 @@ This file tracks the current implementation status against the product plan in `
 | Search indexing support | Implemented | Crawling is allowed through `robots.txt`, and `sitemap.xml` lists absolute production URLs. |
 | Search-intent homepage copy | Implemented | The hero metadata and visible hero copy now target French queries around jours-homme, jours travaillés, quota annuel client, consultants, and freelances. |
 | GitHub Pages custom domain | Done | The root `CNAME` file contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. |
-| GitHub Pages HTTPS | Done | Enforce HTTPS is enabled after DNS and custom-domain verification. |
+| Cloudflare DNS/CDN | Done outside repo | The production domain is routed through Cloudflare while GitHub Pages remains the static origin. |
+| Cloudflare traffic analytics | Done outside repo | Cloudflare provides aggregate production traffic metrics such as visits and country-level distribution from its dashboard configuration. |
+| Production HTTPS | Done | Enforce HTTPS is enabled in GitHub Pages, and Cloudflare handles the public edge connection for `monquota.fr`. |
 | Production smoke test | Not yet verified | Confirm homepage `200`, unknown routes show `404.html`, and `http://` redirects to `https://` on production. |
 | Social preview rendering | Not yet verified | Check that link previews render `https://monquota.fr/social-card.png` correctly after deployment. |
-| Security headers and cache policy | GitHub Pages managed | Plain GitHub Pages does not support repo-defined custom headers or cache rules; use a proxy/CDN only if those become hard requirements. |
+| Security headers and cache policy | Cloudflare/GitHub Pages managed | Plain GitHub Pages does not support repo-defined custom headers or cache rules; production response headers and cache rules can be managed in Cloudflare. |

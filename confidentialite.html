@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Informations de confidentialité pour la calculette quota annuel."
+      content="Informations de confidentialité pour la calculette jours-homme."
     />
     <meta name="robots" content="index,follow" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="canonical" href="https://monquota.fr/confidentialite.html" />
     <link rel="icon" href="./favicon.png" type="image/png" />
-    <title>Confidentialité | Calculette quota annuel</title>
+    <title>Confidentialité | Calculette jours-homme</title>
     <style>
       :root {
         color-scheme: light;
@@ -46,6 +46,12 @@
         line-height: 1.15;
       }
 
+      h2 {
+        margin: 1.6rem 0 0.75rem;
+        font-size: 1.15rem;
+        line-height: 1.25;
+      }
+
       p,
       li {
         margin: 0 0 1rem;
@@ -74,9 +80,21 @@
         serveur distant. Si vous changez de domaine, de navigateur ou d'appareil,
         exportez votre sauvegarde JSON puis réimportez-la sur la nouvelle adresse.
       </p>
+      <h2>Mesure d'audience</h2>
       <p>
-        Le site n'intègre actuellement ni analytics, ni pixel marketing, ni outil
-        de session replay.
+        Le domaine de production passe par Cloudflare pour la diffusion du site,
+        la sécurité et les statistiques de trafic agrégées. Cloudflare peut traiter
+        des informations techniques liées aux requêtes web, comme l'adresse IP, le
+        navigateur, la page consultée, le pays estimé, le référent et des mesures
+        de performance.
+      </p>
+      <p>
+        Ces statistiques servent à comprendre le nombre de visites et les pays de
+        consultation du site. Elles ne donnent pas accès aux données de planning
+        stockées dans <code>localStorage</code>.
+      </p>
+      <p>
+        Le site n'intègre pas de pixel marketing ni d'outil de session replay.
       </p>
       <p><a href="./index.html">Retour à l'application</a></p>
     </main>

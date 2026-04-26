@@ -8,6 +8,7 @@ Small static browser app for planning worked days over a selected year.
 - No backend
 - Local state stored in `localStorage`
 - French public holidays generated in code
+- Production domain routed through Cloudflare while the app stays static
 - Public launch assets included: polished PWA icons, maskable install icons, web manifest screenshots, service worker, social card, sitemap, `robots.txt`, `CNAME`, and privacy page
 
 ## Structure
@@ -109,10 +110,11 @@ just test
 - Launch guidance lives in `docs/DEPLOYMENT_CHECKLIST.md`.
 - The app is ready for the existing GitHub Pages flow; no additional GitHub Actions workflow is required.
 - The root `CNAME` file contains `monquota.fr`; DNS and GitHub Pages custom-domain verification are done.
-- Enforce HTTPS is enabled.
+- The production domain is routed through Cloudflare for DNS/CDN, public HTTPS edge handling, security controls, and aggregate traffic analytics.
+- Enforce HTTPS is enabled in GitHub Pages.
 - Canonical/Open Graph/Twitter URLs point to `https://monquota.fr/`.
 - `sitemap.xml` and `robots.txt` use absolute production URLs.
 - Social preview metadata points to the production PNG social card, and the manifest includes square install icons, maskable install icons, and wide and narrow screenshots.
 - The PWA shell uses `#103d46` for mobile browser chrome and `#f4eee4` for the launch background, matching the app palette.
 - Still pending after deployment: production smoke test and social preview rendering check.
-- GitHub Pages manages response headers and cache policy for plain static hosting; use a proxy/CDN only if custom headers or cache rules become mandatory.
+- GitHub Pages remains the static origin; production response headers, cache rules, and traffic analytics are now managed from Cloudflare.

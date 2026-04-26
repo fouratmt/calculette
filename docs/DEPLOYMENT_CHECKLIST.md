@@ -1,6 +1,6 @@
 # Deployment Checklist
 
-This app is static and already runnable from `index.html`. The target hosting setup is GitHub Pages with the custom domain `monquota.fr`. The table below tracks public-launch readiness against the current repository state.
+This app is static and already runnable from `index.html`. The target production setup is GitHub Pages as the static origin, with the custom domain `monquota.fr` routed through Cloudflare for DNS/CDN, HTTPS edge handling, security controls, and aggregate traffic analytics. The table below tracks public-launch readiness against the current repository state.
 
 ## 1. Launch Readiness Status
 
@@ -17,12 +17,14 @@ This app is static and already runnable from `index.html`. The target hosting se
 | Social sharing image | Implemented | `social-card.png` is production-hosted and referenced by Open Graph/Twitter metadata; `social-card.svg` remains as the editable source. | None. |
 | Search engine access | Implemented | `robots.txt` allows crawling and points to `https://monquota.fr/sitemap.xml`; `sitemap.xml` contains absolute production URLs. | Submit or inspect the sitemap only if search indexing matters. |
 | Custom domain | Done | `CNAME` contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. | None. |
-| HTTPS | Done | Enforce HTTPS is enabled in GitHub Pages after domain verification. | Verify behavior in the production smoke test. |
+| Cloudflare DNS/CDN | Done outside repo | `monquota.fr` is routed through Cloudflare while the app remains a plain static GitHub Pages site. | Keep the Cloudflare zone active and verify production responses after DNS changes. |
+| Cloudflare traffic analytics | Done outside repo | Cloudflare provides aggregate production traffic metrics such as visits and country-level distribution from its dashboard configuration. | Keep the privacy page aligned with any analytics setting changes. |
+| HTTPS | Done | Enforce HTTPS is enabled in GitHub Pages after domain verification, and Cloudflare handles the public edge connection for the production domain. | Verify behavior in the production smoke test. |
 | Production smoke test | Not yet verified | The production site should be checked from the public URL after deployment. | Confirm homepage `200`, unknown routes show `404.html`, and `http://` redirects to `https://`. |
 | Social preview rendering | Not yet verified | Metadata points to `https://monquota.fr/social-card.png`. | Check rendering with target social/link preview tools after deployment. |
 | 404 page | Implemented | `404.html` is present for GitHub Pages unknown routes. | Covered by the production smoke test. |
-| Security headers | Not configurable on GitHub Pages | GitHub Pages does not support repository-defined custom response headers for a plain static Pages site. | Use a proxy such as Cloudflare only if custom CSP/security headers become a hard requirement. |
-| Cache policy | GitHub Pages managed | GitHub Pages controls response caching; this repo intentionally avoids long-lived hashed asset assumptions. | After deploy, verify updates appear after a refresh. Move to hashed assets or another host only if cache control becomes a release blocker. |
+| Security headers | Cloudflare managed | GitHub Pages does not support repository-defined custom response headers, but Cloudflare can set production response headers from dashboard rules. | Add strict headers in Cloudflare if they become required. |
+| Cache policy | Cloudflare/GitHub Pages managed | This repo intentionally avoids long-lived hashed asset assumptions; Cloudflare should not cache HTML or mutable assets aggressively unless purged on release. | After deploy, verify updates appear after a refresh. Move to hashed assets if long cache lifetimes become necessary. |
 | Release checks | Implemented locally | `just check` runs syntax validation and Node unit tests. | Run it before each release, then perform the manual smoke tests below on production. |
 
 ## 2. GitHub Pages Setup
@@ -34,29 +36,39 @@ This app is static and already runnable from `index.html`. The target hosting se
 5. Enforce HTTPS is enabled.
 6. Verify that the production page registers `service-worker.js`; service workers require HTTPS, except on localhost.
 
-GitHub Pages limitations:
+Cloudflare setup:
+
+1. Keep `monquota.fr` active in Cloudflare DNS.
+2. Route production traffic through Cloudflare while keeping GitHub Pages as the static origin.
+3. Use Cloudflare Analytics or Web Analytics for aggregate visits and country-level distribution.
+4. Keep the privacy page in sync with analytics settings.
+
+GitHub Pages limitations still apply at the origin:
 
 - Repository-defined custom response headers are not supported for plain GitHub Pages static hosting.
 - Repository-defined cache-control rules are not supported for plain GitHub Pages static hosting.
-- If strict custom headers or cache rules become mandatory, put the site behind a proxy/CDN that can set them.
+- Production custom headers and cache rules should be configured in Cloudflare, not in this repository.
 
-Preferred response headers if a proxy/CDN is added later:
+Preferred response headers if configured in Cloudflare:
 
 ```text
-Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
 X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
 Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=()
 Cross-Origin-Opener-Policy: same-origin
 ```
 
+The Cloudflare hosts in `script-src` and `connect-src` are only needed if Cloudflare Web Analytics injects or uses the browser beacon. Proxied Cloudflare analytics from edge logs does not require repository code changes.
+
 ## 3. Cache Strategy
 
-- GitHub Pages manages cache headers for static files.
+- GitHub Pages manages origin cache headers for static files.
+- Cloudflare can add edge caching on top of GitHub Pages.
 - Because assets are not filename-hashed, avoid relying on long immutable caching in any future proxy/CDN configuration.
-- If a proxy/CDN is added, use short cache lifetimes or purge assets on each release until asset versioning is introduced.
+- Use short Cloudflare cache lifetimes or purge assets on each release until asset versioning is introduced.
 
-Good proxy/CDN default before asset versioning:
+Good Cloudflare default before asset versioning:
 
 ```text
 Cache-Control: no-cache
@@ -102,7 +114,7 @@ Manual smoke tests:
 5. Export a JSON backup, clear the session, then import it again.
 6. Test the app on desktop and on a real mobile browser for touch selection.
 7. Validate that the production pages return `200`, unknown routes show `404.html`, and HTTP redirects to HTTPS.
-8. Confirm the existing GitHub Pages flow completed successfully.
+8. Confirm Cloudflare serves the production domain and the existing GitHub Pages flow completed successfully.
 
 ## 6. Post-Deploy Checks
 
@@ -113,3 +125,4 @@ Manual smoke tests:
 5. Verify the session warning text mentions browser-and-address scoped data.
 6. Re-run the smoke test on the real production URL.
 7. Check social previews against the production PNG image URL.
+8. Confirm Cloudflare analytics shows traffic without exposing local planning data.
