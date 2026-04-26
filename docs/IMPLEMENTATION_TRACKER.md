@@ -61,7 +61,7 @@ This file tracks the current implementation status against the product plan in `
 | GitHub Pages deployment flow | Already configured outside this pass | The app is kept as plain static files for the existing repository Pages flow; no extra Actions workflow is required. |
 | GitHub Pages static serving compatibility | Implemented | `.nojekyll` prevents Jekyll processing and keeps the static file tree served directly. |
 | Custom 404 page | Implemented | `404.html` provides a static GitHub Pages 404 response page. |
-| Production-domain metadata | Implemented | Canonical, Open Graph, and Twitter metadata point to `https://monquota.fr/` and the production PNG social card. |
+| Production-domain metadata | Implemented | Canonical, Open Graph, Twitter, and JSON-LD WebApplication metadata point to `https://monquota.fr/` and the production PNG social card. |
 | Search indexing support | Implemented | Crawling is allowed through `robots.txt`, `sitemap.xml` lists absolute production URLs, and the homepage includes the Bing Webmaster validation meta tag. |
 | Search-intent homepage copy | Implemented | The hero metadata and visible hero copy now target French queries around jours-homme, jours travaillés, quota annuel client, consultants, and freelances. |
 | GitHub Pages custom domain | Done | The root `CNAME` file contains `monquota.fr`; DNS is configured and the custom domain is verified in GitHub Pages settings. |
